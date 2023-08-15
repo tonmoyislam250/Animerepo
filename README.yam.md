@@ -1,5 +1,5 @@
 ### The Only Repo That Contains Audio Books
-## Changee The Food Emoji
+## Change The Food Emoji
 - [Avocado](/README.md)
 
 Listen to Audio Books. Add this repository using this shortcode: [aguaco](https://raw.githubusercontent.com/KillerDogeEmpire/avocado-extensions/builds/repo.json)
