@@ -1,21 +1,6 @@
-# `Cloudstream3 Plugin Repo Template`
+### The Only Repo That Contains Audio Books
+Listen to Audio Books. Add this repository using this shortcode: [aguaco](https://raw.githubusercontent.com/KillerDogeEmpire/avocado-extensions/builds/repo.json)
 
-Template for a [Cloudstream3](https://github.com/recloudstream) plugin repo
+~Click~ eat the avocado to install it on your phone:
 
-**⚠️ Make sure you check "Include all branches" when using this template**
-
- 
-## Getting started with writing your first plugin
-
-This template includes 1 example plugin.
-
-1. Open the root build.gradle.kts, read the comments and replace all the placeholders
-2. Familiarize yourself with the project structure. Most files are commented
-3. Build or deploy your first plugin using:
-   - Windows: `.\gradlew.bat ExampleProvider:make` or `.\gradlew.bat ExampleProvider:deployWithAdb`
-   - Linux & Mac: `./gradlew ExampleProvider:make` or `./gradlew ExampleProvider:deployWithAdb`
-
-## Attribution
-
-This template as well as the gradle plugin and the whole plugin system is **heavily** based on [Aliucord](https://github.com/Aliucord).
-*Go use it, it's a great mobile discord client mod!*
+[<img alt="alt_text" width="100px" src="https://discordapp.com/assets/56223cd60f7ec48e13e8a0db94dcc785.svg"/>](https://self-similarity.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/KillerDogeEmpire/avocado-extensions/builds/repo.json)
