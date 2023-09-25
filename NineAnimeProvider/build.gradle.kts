@@ -1,12 +1,12 @@
 // use an integer for version numbers
-version = 27
+version = 28
 
 
 cloudstream {
     language = "en"
     // All of these properties are optional, you can safely remove them
 
-    description = "Watch 9anime, also check out Enimax's app/chrome extension, He was a big help for fixing the extension, here is the link https://github.com/enimax-anime/enimax"
+    description = "Watch Aniwave/9anime, also check out Enimax's app/chrome extension, He was a big help for fixing the extension, here is the link https://github.com/enimax-anime/enimax"
     authors = listOf("Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
 
     /**
@@ -22,5 +22,5 @@ cloudstream {
         "OVA",
     )
 
-    iconUrl = "https://raw.githubusercontent.com/Stormunblessed/IPTV-CR-NIC/main/logos/Nain.png"
+    iconUrl = "https://www.google.com/s2/favicons?domain=aniwave.to&sz=%size%"
 }
