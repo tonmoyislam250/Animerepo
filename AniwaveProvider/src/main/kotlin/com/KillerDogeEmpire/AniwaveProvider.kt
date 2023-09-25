@@ -9,15 +9,13 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import kotlinx.coroutines.delay
-import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.net.URLEncoder
 
 
-class NineAnimeProvider : MainAPI() {
+class AniwaveProvider : MainAPI() {
     override var mainUrl = "https://aniwave.to"
     override var name = "Aniwave/9Anime"
     override val hasMainPage = true
