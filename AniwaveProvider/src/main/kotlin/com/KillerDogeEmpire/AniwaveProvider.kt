@@ -9,8 +9,10 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import kotlinx.coroutines.delay
+import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.net.URLEncoder
 
@@ -27,31 +29,31 @@ class AniwaveProvider : MainAPI() {
     private val vrfInterceptor by lazy { JsVrfInterceptor(mainUrl) }
     companion object {
         fun encode(input: String): String =
-            java.net.URLEncoder.encode(input, "utf-8").replace("+", "%2B")
+                java.net.URLEncoder.encode(input, "utf-8").replace("+", "%2B")
         private fun decode(input: String): String = java.net.URLDecoder.decode(input, "utf-8")
 //        private const val consuNineAnimeApi = "https://api.consumet.org/anime/9anime"
 
     }
 
     override val mainPage = mainPageOf(
-        "$mainUrl/ajax/home/widget/trending?page=" to "Trending",
-        "$mainUrl/ajax/home/widget/updated-all?page=" to "All",
-        "$mainUrl/ajax/home/widget/updated-sub?page=" to "Recently Updated (SUB)",
-        "$mainUrl/ajax/home/widget/updated-dub?page=" to "Recently Updated (DUB)",
-        "$mainUrl/ajax/home/widget/updated-china?page=" to "Recently Updated (Chinese)",
-        "$mainUrl/ajax/home/widget/random?page=" to "Random",
+            "$mainUrl/ajax/home/widget/trending?page=" to "Trending",
+            "$mainUrl/ajax/home/widget/updated-all?page=" to "All",
+            "$mainUrl/ajax/home/widget/updated-sub?page=" to "Recently Updated (SUB)",
+            "$mainUrl/ajax/home/widget/updated-dub?page=" to "Recently Updated (DUB)",
+            "$mainUrl/ajax/home/widget/updated-china?page=" to "Recently Updated (Chinese)",
+            "$mainUrl/ajax/home/widget/random?page=" to "Random",
     )
 
     override suspend fun getMainPage(
-        page: Int,
-        request: MainPageRequest
+            page: Int,
+            request: MainPageRequest
     ): HomePageResponse {
         val url = request.data + page
         vrfInterceptor.wake()
         val home = Jsoup.parse(
-            app.get(
-                url
-            ).parsed<Response>().html!!
+                app.get(
+                        url
+                ).parsed<Response>().html!!
         ).select("div.item").mapNotNull { element ->
             val title = element.selectFirst(".info > .name") ?: return@mapNotNull null
             val link = title.attr("href").replace(Regex("\\/ep.*\$"),"")
@@ -63,10 +65,10 @@ class AniwaveProvider : MainAPI() {
             newAnimeSearchResponse(title.text() ?: return@mapNotNull null, link) {
                 this.posterUrl = poster
                 addDubStatus(
-                    dubbedEpisodes != null,
-                    subbedEpisodes != null,
-                    dubbedEpisodes,
-                    subbedEpisodes
+                        dubbedEpisodes != null,
+                        subbedEpisodes != null,
+                        dubbedEpisodes,
+                        subbedEpisodes
                 )
             }
         }
@@ -75,9 +77,9 @@ class AniwaveProvider : MainAPI() {
     }
 
     data class Response(
-        @JsonProperty("result") val html: String?,
-        @JsonProperty("llaa"   ) var llaa   : String? = null,
-        @JsonProperty("epurl" ) var epurl : String? = null
+            @JsonProperty("result") val html: String?,
+            @JsonProperty("llaa"   ) var llaa   : String? = null,
+            @JsonProperty("epurl" ) var epurl : String? = null
     )
 
 
@@ -89,7 +91,7 @@ class AniwaveProvider : MainAPI() {
     override suspend fun search(query: String): List<SearchResponse> {
         val vrf = vrfInterceptor.getVrf(query)        //?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&
         val url =
-            "$mainUrl/filter?keyword=${query}&vrf=${encode(vrf)}&page=1"
+                "$mainUrl/filter?keyword=${query}&vrf=${encode(vrf)}&page=1"
         return app.get(url).document.select("#list-items div.ani.poster.tip > a").mapNotNull {
             val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
             val img = it.select("img")
@@ -99,10 +101,10 @@ class AniwaveProvider : MainAPI() {
             newAnimeSearchResponse(title, link) {
                 posterUrl = img.attr("src")
                 addDubStatus(
-                    dubbedEpisodes != null,
-                    subbedEpisodes != null,
-                    dubbedEpisodes,
-                    subbedEpisodes
+                        dubbedEpisodes != null,
+                        subbedEpisodes != null,
+                        dubbedEpisodes,
+                        subbedEpisodes
                 )
 
             }
@@ -111,15 +113,11 @@ class AniwaveProvider : MainAPI() {
 
 
     /*   private fun Int.toBoolean() = this == 1
-
      data class EpsInfo (
-
          @JsonProperty("llaa"     ) var llaa     : String?  = null,
          @JsonProperty("epurl"    ) var epurl    : String?  = null,
          @JsonProperty("needDUB" ) var needDub : Boolean? = null,
-
          )
-
      private fun Element.toGetEpisode(url: String, needDub: Boolean):Episode{
            //val ids = this.attr("data-ids").split(",", limit = 2)
            val epNum = this.attr("data-num")
@@ -141,20 +139,20 @@ class AniwaveProvider : MainAPI() {
         val ratingElement = meta.selectFirst(".brating > #w-rating")
         val id = ratingElement?.attr("data-id") ?: throw ErrorLoadingException("Could not find id")
         val binfo =
-            meta.selectFirst(".binfo") ?: throw ErrorLoadingException("Could not find binfo")
+                meta.selectFirst(".binfo") ?: throw ErrorLoadingException("Could not find binfo")
         val info = binfo.selectFirst(".info") ?: throw ErrorLoadingException("Could not find info")
         val poster = binfo.selectFirst(".poster > span > img")?.attr("src")
         val backimginfo = doc.selectFirst("#player")?.attr("style")
         val backimgRegx = Regex("(http|https).*jpg")
         val backposter = backimgRegx.find(backimginfo.toString())?.value ?: poster
         val title = (info.selectFirst(".title") ?: info.selectFirst(".d-title"))?.text()
-            ?: throw ErrorLoadingException("Could not find title")
+                ?: throw ErrorLoadingException("Could not find title")
         val vvhelp = consumetVrf(id)
         val vrf = encode(vvhelp.url)
         val episodeListUrl = "$mainUrl/ajax/episode/list/$id?${vvhelp.vrfQuery}=${vrf}"
         val body =
-            app.get(episodeListUrl).parsedSafe<Response>()?.html
-                ?: throw ErrorLoadingException("Could not parse json with Vrf=$vrf id=$id url=\n$episodeListUrl")
+                app.get(episodeListUrl).parsedSafe<Response>()?.html
+                        ?: throw ErrorLoadingException("Could not parse json with Vrf=$vrf id=$id url=\n$episodeListUrl")
 
         val subEpisodes = ArrayList<Episode>()
         val dubEpisodes = ArrayList<Episode>()
@@ -185,27 +183,27 @@ class AniwaveProvider : MainAPI() {
             val ids = element.attr("data-ids").split(",", limit = 2)
 
             val epNum = element.attr("data-num")
-                .toIntOrNull() // might fuck up on 7.5 ect might use data-slug instead
+                    .toIntOrNull() // might fuck up on 7.5 ect might use data-slug instead
             val epTitle = element.selectFirst("span.d-title")?.text()
             //val filler = element.hasClass("filler")
             ids.getOrNull(1)?.let { dub ->
                 val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
                 dubEpisodes.add(
-                    Episode(
-                        epdd,
-                        epTitle,
-                        episode = epNum
-                    )
+                        Episode(
+                                epdd,
+                                epTitle,
+                                episode = epNum
+                        )
                 )
             }
             ids.getOrNull(0)?.let { sub ->
                 val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
                 subEpisodes.add(
-                    Episode(
-                        epdd,
-                        epTitle,
-                        episode = epNum
-                    )
+                        Episode(
+                                epdd,
+                                epTitle,
+                                episode = epNum
+                        )
                 )
             }
 
@@ -226,13 +224,13 @@ class AniwaveProvider : MainAPI() {
     }
 
     data class Result(
-        @JsonProperty("url")
-        val url: String? = null
+            @JsonProperty("url")
+            val url: String? = null
     )
 
     data class Links(
-        @JsonProperty("result")
-        val result: Result? = null
+            @JsonProperty("result")
+            val result: Result? = null
     )
 
     /*private suspend fun getEpisodeLinks(id: String): Links? {
@@ -279,41 +277,42 @@ class AniwaveProvider : MainAPI() {
 
 
     data class NineConsumet (
-        @JsonProperty("headers"  ) var headers  : ServerHeaders?           = ServerHeaders(),
-        @JsonProperty("sources"  ) var sources  : ArrayList<NineConsuSources>? = arrayListOf(),
-        @JsonProperty("embedURL" ) var embedURL : String?            = null,
+            @JsonProperty("headers"  ) var headers  : ServerHeaders?           = ServerHeaders(),
+            @JsonProperty("sources"  ) var sources  : ArrayList<NineConsuSources>? = arrayListOf(),
+            @JsonProperty("embedURL" ) var embedURL : String?            = null,
 
-        )
+            )
     data class NineConsuSources (
-        @JsonProperty("url"    ) var url    : String?  = null,
-        @JsonProperty("isM3U8" ) var isM3U8 : Boolean? = null
+            @JsonProperty("url"    ) var url    : String?  = null,
+            @JsonProperty("isM3U8" ) var isM3U8 : Boolean? = null
     )
     data class ServerHeaders (
 
-        @JsonProperty("Referer"    ) var referer    : String? = null,
-        @JsonProperty("User-Agent" ) var userAgent : String? = null
+            @JsonProperty("Referer"    ) var referer    : String? = null,
+            @JsonProperty("User-Agent" ) var userAgent : String? = null
 
     )
     data class SubDubInfo (
-        @JsonProperty("ID"   ) val ID   : String,
-        @JsonProperty("type" ) val type : String
+            @JsonProperty("ID"   ) val ID   : String,
+            @JsonProperty("type" ) val type : String
     )
 
     private fun serverName(serverID: String?): String? {
         val sss =
-            when (serverID) {
-                "41" -> "vidplay"
-                "44" -> "filemoon"
-                "40" -> "streamtape"
-                "35" -> "mp4upload"
-                else -> null
-            }
+                when (serverID) {
+                    "41" -> "vidstream"
+                    "44" -> "filemoon"
+                    "40" -> "streamtape"
+                    "35" -> "mp4upload"
+                    else -> null
+                }
         return sss
     }
 
+
     data class ConsumetVrfHelper (
-        @JsonProperty("url"      ) var url      : String,
-        @JsonProperty("vrfQuery" ) var vrfQuery : String
+            @JsonProperty("url"      ) var url      : String,
+            @JsonProperty("vrfQuery" ) var vrfQuery : String
     )
     private suspend fun consumetVrf(input: String): ConsumetVrfHelper{
         return app.get("https://9anime.eltik.net/vrf?query=$input&apikey=lagrapps").parsed<ConsumetVrfHelper>()
@@ -328,10 +327,10 @@ class AniwaveProvider : MainAPI() {
     }
 
     override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
+            data: String,
+            isCasting: Boolean,
+            subtitleCallback: (SubtitleFile) -> Unit,
+            callback: (ExtractorLink) -> Unit
     ): Boolean {
         val parseData = AppUtils.parseJson<SubDubInfo>(data)
         val sa = consumetVrf(parseData.ID)
@@ -346,7 +345,7 @@ class AniwaveProvider : MainAPI() {
         }
         aas.apmap { (sName, sId) ->
             val nName = if (sName == null) "mycloud" else sName
-            val vids = nName == "vidplay"
+            val vids = nName == "vidstream"
             val mclo = nName == "mycloud"
             if (vids || mclo) {
                 val sae = consumetVrf(sId)
@@ -373,21 +372,21 @@ class AniwaveProvider : MainAPI() {
                     val reg2 = Regex("((https|http).*list.*(m3u8|.mp4))")
                     val m3u8 = reg2.find(ssae)?.destructured?.component1() ?: ""
 
-                    val name = if (vids) "Vidplay" else "MyCloud"
+                    val name = if (vids) "Vidstream" else "MyCloud"
                     generateM3u8(
-                        name,
-                        m3u8.replace("#.mp4",""),
-                        ref
+                            name,
+                            m3u8.replace("#.mp4",""),
+                            ref
                     ).apmap {
                         callback(
-                            ExtractorLink(
-                                name,
-                                name,
-                                it.url,
-                                ref,
-                                getQualityFromName(it.quality.toString()),
-                                true
-                            )
+                                ExtractorLink(
+                                        name,
+                                        name,
+                                        it.url,
+                                        ref,
+                                        getQualityFromName(it.quality.toString()),
+                                        true
+                                )
                         )
                     }
                 }
