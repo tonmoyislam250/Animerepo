@@ -302,7 +302,7 @@ class AniwaveProvider : MainAPI() {
     private fun serverName(serverID: String?): String? {
         val sss =
             when (serverID) {
-                "41" -> "vidstream"
+                "41" -> "vidplay"
                 "44" -> "filemoon"
                 "40" -> "streamtape"
                 "35" -> "mp4upload"
@@ -310,7 +310,6 @@ class AniwaveProvider : MainAPI() {
             }
         return sss
     }
-
 
     data class ConsumetVrfHelper (
         @JsonProperty("url"      ) var url      : String,
