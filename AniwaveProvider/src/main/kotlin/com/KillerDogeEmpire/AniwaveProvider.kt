@@ -1,6 +1,5 @@
 package com.KillerDogeEmpire
 
-
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
@@ -12,7 +11,6 @@ import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.net.URLEncoder
-
 
 class AniwaveProvider : MainAPI() {
     override var mainUrl = "https://aniwave.to"
@@ -29,7 +27,6 @@ class AniwaveProvider : MainAPI() {
             java.net.URLEncoder.encode(input, "utf-8").replace("+", "%2B")
         private fun decode(input: String): String = java.net.URLDecoder.decode(input, "utf-8")
 //        private const val consuNineAnimeApi = "https://api.consumet.org/anime/9anime"
-
 
     }
 
@@ -130,7 +127,6 @@ class AniwaveProvider : MainAPI() {
                episode = epNum
            )
        } */
-
 
     override suspend fun load(url: String): LoadResponse {
         val validUrl = url.replace("https://9anime.to", mainUrl).replace("https://aniwave.to",mainUrl)
@@ -299,7 +295,6 @@ class AniwaveProvider : MainAPI() {
         //season 1 Dubbed
         //Season 2 SofSubbed
 
-
         println("SUBstat ${DubStatus.Subbed.name}")
         println("SUBstat ${DubStatus.Subbed.toString()}")
 
@@ -377,8 +372,6 @@ class AniwaveProvider : MainAPI() {
           return true
       } */
 
-
-
     data class NineConsumet (
         @JsonProperty("headers"  ) var headers  : ServerHeaders?           = ServerHeaders(),
         @JsonProperty("sources"  ) var sources  : ArrayList<NineConsuSources>? = arrayListOf(),
@@ -429,11 +422,6 @@ class AniwaveProvider : MainAPI() {
         return ses.substringAfter("url\":\"").substringBefore("\"")
     }
 
-
-
-
-
-
     data class AniwaveMediaInfo (
 
         @JsonProperty("result" ) val result : AniwaveResult? = AniwaveResult()
@@ -451,10 +439,6 @@ class AniwaveProvider : MainAPI() {
         @JsonProperty("file"    ) var file    : String?  = null,
         @JsonProperty("label"   ) var label   : String?  = null,
     )
-
-
-
-
 
     override suspend fun loadLinks(
         data: String,
