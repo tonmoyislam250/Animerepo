@@ -299,9 +299,9 @@ class AniwaveProvider : MainAPI() {
         println("SUBstat ${DubStatus.Subbed.toString()}")
 
         val names = listOf(
-            Pair(DubStatus.Sub.toString(),-1),
-            Pair(DubStatus.Dub.toString(),1),
-            Pair("Soft ${DubStatus.Sub}",2),
+            Pair("Sub",-1),
+            Pair("Dub",1),
+            Pair("S-Sub",2),
         )
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
