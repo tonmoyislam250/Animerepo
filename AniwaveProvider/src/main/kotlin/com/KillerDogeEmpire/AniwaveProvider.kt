@@ -1,7 +1,5 @@
 package com.KillerDogeEmpire
 
-
-
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
@@ -9,15 +7,12 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
 import kotlinx.coroutines.delay
-import okhttp3.MediaType
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.net.URLEncoder
 
-
-class NineAnimeProvider : MainAPI() {
+class AniwaveProvider : MainAPI() {
     override var mainUrl = "https://aniwave.to"
     override var name = "Aniwave/9Anime"
     override val hasMainPage = true
@@ -26,34 +21,35 @@ class NineAnimeProvider : MainAPI() {
     override val supportedTypes = setOf(TvType.Anime)
     override val hasQuickSearch = true
 
-    private val vrfInterceptor by lazy { JsVrfInterceptor(mainUrl) }
+    //private val vrfInterceptor by lazy { JsVrfInterceptor(mainUrl) }
     companion object {
         fun encode(input: String): String =
-            java.net.URLEncoder.encode(input, "utf-8").replace("+", "%2B")
+                java.net.URLEncoder.encode(input, "utf-8").replace("+", "%2B")
         private fun decode(input: String): String = java.net.URLDecoder.decode(input, "utf-8")
 //        private const val consuNineAnimeApi = "https://api.consumet.org/anime/9anime"
 
     }
 
     override val mainPage = mainPageOf(
-        "$mainUrl/ajax/home/widget/trending?page=" to "Trending",
-        "$mainUrl/ajax/home/widget/updated-all?page=" to "All",
-        "$mainUrl/ajax/home/widget/updated-sub?page=" to "Recently Updated (SUB)",
-        "$mainUrl/ajax/home/widget/updated-dub?page=" to "Recently Updated (DUB)",
-        "$mainUrl/ajax/home/widget/updated-china?page=" to "Recently Updated (Chinese)",
-        "$mainUrl/ajax/home/widget/random?page=" to "Random",
+            "$mainUrl/ajax/home/widget/trending?page=" to "Trending",
+            "$mainUrl/ajax/home/widget/updated-all?page=" to "All",
+            "$mainUrl/ajax/home/widget/updated-sub?page=" to "Recently Updated (SUB)",
+            "$mainUrl/ajax/home/widget/updated-dub?page=" to "Recently Updated (DUB)",
+            "$mainUrl/ajax/home/widget/updated-china?page=" to "Recently Updated (Chinese)",
+            "$mainUrl/ajax/home/widget/random?page=" to "Random",
     )
 
     override suspend fun getMainPage(
-        page: Int,
-        request: MainPageRequest
+            page: Int,
+            request: MainPageRequest
     ): HomePageResponse {
         val url = request.data + page
-        vrfInterceptor.wake()
+        //vrfInterceptor.wake()
         val home = Jsoup.parse(
-            app.get(
-                url
-            ).parsed<Response>().html!!
+                app.get(
+                        url,
+
+                        ).parsed<Response>().html!!
         ).select("div.item").mapNotNull { element ->
             val title = element.selectFirst(".info > .name") ?: return@mapNotNull null
             val link = title.attr("href").replace(Regex("\\/ep.*\$"),"")
@@ -65,10 +61,10 @@ class NineAnimeProvider : MainAPI() {
             newAnimeSearchResponse(title.text() ?: return@mapNotNull null, link) {
                 this.posterUrl = poster
                 addDubStatus(
-                    dubbedEpisodes != null,
-                    subbedEpisodes != null,
-                    dubbedEpisodes,
-                    subbedEpisodes
+                        dubbedEpisodes != null,
+                        subbedEpisodes != null,
+                        dubbedEpisodes,
+                        subbedEpisodes
                 )
             }
         }
@@ -77,9 +73,9 @@ class NineAnimeProvider : MainAPI() {
     }
 
     data class Response(
-        @JsonProperty("result") val html: String?,
-        @JsonProperty("llaa"   ) var llaa   : String? = null,
-        @JsonProperty("epurl" ) var epurl : String? = null
+            @JsonProperty("result") val html: String?,
+            @JsonProperty("llaa"   ) var llaa   : String? = null,
+            @JsonProperty("epurl" ) var epurl : String? = null
     )
 
 
@@ -89,10 +85,10 @@ class NineAnimeProvider : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val vrf = vrfInterceptor.getVrf(query)        //?language%5B%5D=${if (selectDub) "dubbed" else "subbed"}&
         val url =
-            "$mainUrl/filter?keyword=${query}&vrf=${encode(vrf)}&page=1"
-        return app.get(url).document.select("#list-items div.ani.poster.tip > a").mapNotNull {
+                "$mainUrl/filter?keyword=${query}"
+        return app.get(url,
+        ).document.select("#list-items div.ani.poster.tip > a").mapNotNull {
             val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
             val img = it.select("img")
             val title = img.attr("alt")
@@ -101,10 +97,10 @@ class NineAnimeProvider : MainAPI() {
             newAnimeSearchResponse(title, link) {
                 posterUrl = img.attr("src")
                 addDubStatus(
-                    dubbedEpisodes != null,
-                    subbedEpisodes != null,
-                    dubbedEpisodes,
-                    subbedEpisodes
+                        dubbedEpisodes != null,
+                        subbedEpisodes != null,
+                        dubbedEpisodes,
+                        subbedEpisodes
                 )
 
             }
@@ -113,15 +109,11 @@ class NineAnimeProvider : MainAPI() {
 
 
     /*   private fun Int.toBoolean() = this == 1
-
      data class EpsInfo (
-
          @JsonProperty("llaa"     ) var llaa     : String?  = null,
          @JsonProperty("epurl"    ) var epurl    : String?  = null,
          @JsonProperty("needDUB" ) var needDub : Boolean? = null,
-
          )
-
      private fun Element.toGetEpisode(url: String, needDub: Boolean):Episode{
            //val ids = this.attr("data-ids").split(",", limit = 2)
            val epNum = this.attr("data-num")
@@ -135,31 +127,34 @@ class NineAnimeProvider : MainAPI() {
                episode = epNum
            )
        } */
+
     override suspend fun load(url: String): LoadResponse {
-        val validUrl = url.replace("https://9anime.to", mainUrl)
-        val doc = app.get(validUrl).document
+        val validUrl = url.replace("https://9anime.to", mainUrl).replace("https://aniwave.to",mainUrl)
+        val doc = app.get(validUrl,
+        ).document
 
         val meta = doc.selectFirst("#w-info") ?: throw ErrorLoadingException("Could not find info")
         val ratingElement = meta.selectFirst(".brating > #w-rating")
         val id = ratingElement?.attr("data-id") ?: throw ErrorLoadingException("Could not find id")
         val binfo =
-            meta.selectFirst(".binfo") ?: throw ErrorLoadingException("Could not find binfo")
+                meta.selectFirst(".binfo") ?: throw ErrorLoadingException("Could not find binfo")
         val info = binfo.selectFirst(".info") ?: throw ErrorLoadingException("Could not find info")
         val poster = binfo.selectFirst(".poster > span > img")?.attr("src")
         val backimginfo = doc.selectFirst("#player")?.attr("style")
         val backimgRegx = Regex("(http|https).*jpg")
         val backposter = backimgRegx.find(backimginfo.toString())?.value ?: poster
         val title = (info.selectFirst(".title") ?: info.selectFirst(".d-title"))?.text()
-            ?: throw ErrorLoadingException("Could not find title")
+                ?: throw ErrorLoadingException("Could not find title")
         val vvhelp = consumetVrf(id)
         val vrf = encode(vvhelp.url)
         val episodeListUrl = "$mainUrl/ajax/episode/list/$id?${vvhelp.vrfQuery}=${vrf}"
         val body =
-            app.get(episodeListUrl).parsedSafe<Response>()?.html
-                ?: throw ErrorLoadingException("Could not parse json with Vrf=$vrf id=$id url=\n$episodeListUrl")
+                app.get(episodeListUrl).parsedSafe<Response>()?.html
+                        ?: throw ErrorLoadingException("Could not parse json with Vrf=$vrf id=$id url=\n$episodeListUrl")
 
         val subEpisodes = ArrayList<Episode>()
         val dubEpisodes = ArrayList<Episode>()
+        val softsubeps = ArrayList<Episode>()
         val genres = doc.select("div.meta:nth-child(1) > div:contains(Genre:) a").mapNotNull { it.text() }
         val recss = doc.select("div#watch-second .w-side-section div.body a.item").mapNotNull { rec ->
             val href = rec.attr("href")
@@ -184,37 +179,136 @@ class NineAnimeProvider : MainAPI() {
         val duration = doc.selectFirst(".bmeta > div > div:contains(Duration:) > span")?.text()
 
         Jsoup.parse(body).body().select(".episodes > ul > li > a").apmap { element ->
-            val ids = element.attr("data-ids").split(",", limit = 2)
-
+            val ids = element.attr("data-ids").split(",", limit = 3)
+            val dataDub = element.attr("data-dub").toIntOrNull()
             val epNum = element.attr("data-num")
-                .toIntOrNull() // might fuck up on 7.5 ect might use data-slug instead
+                    .toIntOrNull() // might fuck up on 7.5 ect might use data-slug instead
             val epTitle = element.selectFirst("span.d-title")?.text()
             //val filler = element.hasClass("filler")
-            ids.getOrNull(1)?.let { dub ->
-                val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
-                dubEpisodes.add(
-                    Episode(
-                        epdd,
-                        epTitle,
-                        episode = epNum
+
+            //season -1 HARDSUBBED
+            //season 1 Dubbed
+            //Season 2 SofSubbed
+            //SUB, SOFT SUB and DUB
+            if (dataDub == 1  && ids.size == 3) {
+                ids.getOrNull(0)?.let { sub ->
+                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                    subEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = -1
+                            }
                     )
-                )
-            }
-            ids.getOrNull(0)?.let { sub ->
-                val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                subEpisodes.add(
-                    Episode(
-                        epdd,
-                        epTitle,
-                        episode = epNum
+                }
+
+                ids.getOrNull(1)?.let { softsub ->
+                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
+                    softsubeps.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = 2
+                            }
                     )
-                )
+                }
+
+                ids.getOrNull(2)?.let { dub ->
+                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                    dubEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = 1
+                            }
+                    )
+                }
+
             }
 
+
+            //Just SUB and DUB
+            if (dataDub == 1 && ids.size == 2) {
+                ids.getOrNull(1)?.let { dub ->
+                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                    dubEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = 1
+                            }
+                    )
+                }
+                ids.getOrNull(0)?.let { sub ->
+                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                    subEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = -1
+                            }
+                    )
+                }
+            }
+
+            //Just SUB and SOFT SUB
+            if (dataDub == 0 && ids.size == 2) {
+                ids.getOrNull(0)?.let { sub ->
+                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                    subEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = -1
+                            }
+                    )
+                }
+
+                ids.getOrNull(1)?.let { softsub ->
+                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
+                    softsubeps.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = 2
+                            }
+                    )
+                }
+            }
+
+            //Just SUB
+            if (dataDub == 0 && ids.size == 1) {
+                ids.getOrNull(0)?.let { sub ->
+                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                    subEpisodes.add(
+                            newEpisode(epdd){
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = -1
+                            }
+                    )
+                }
+            }
         }
+
+        //season -1 HARDSUBBED
+        //season 1 Dubbed
+        //Season 2 SofSubbed
+
+        println("SUBstat ${DubStatus.Subbed.name}")
+        println("SUBstat ${DubStatus.Subbed.toString()}")
+
+        val names = listOf(
+                Pair("Sub",-1),
+                Pair("Dub",1),
+                Pair("S-Sub",2),
+        )
+
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             addEpisodes(DubStatus.Dubbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
+            addEpisodes(DubStatus.Subbed, softsubeps)
+            this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
             plot = info.selectFirst(".synopsis > .shorting > .content")?.text()
             this.posterUrl = poster
             rating = ratingElement.attr("data-score").toFloat().times(1000f).toInt()
@@ -228,13 +322,13 @@ class NineAnimeProvider : MainAPI() {
     }
 
     data class Result(
-        @JsonProperty("url")
-        val url: String? = null
+            @JsonProperty("url")
+            val url: String? = null
     )
 
     data class Links(
-        @JsonProperty("result")
-        val result: Result? = null
+            @JsonProperty("result")
+            val result: Result? = null
     )
 
     /*private suspend fun getEpisodeLinks(id: String): Links? {
@@ -278,45 +372,43 @@ class NineAnimeProvider : MainAPI() {
           return true
       } */
 
-
-
     data class NineConsumet (
-        @JsonProperty("headers"  ) var headers  : ServerHeaders?           = ServerHeaders(),
-        @JsonProperty("sources"  ) var sources  : ArrayList<NineConsuSources>? = arrayListOf(),
-        @JsonProperty("embedURL" ) var embedURL : String?            = null,
+            @JsonProperty("headers"  ) var headers  : ServerHeaders?           = ServerHeaders(),
+            @JsonProperty("sources"  ) var sources  : ArrayList<NineConsuSources>? = arrayListOf(),
+            @JsonProperty("embedURL" ) var embedURL : String?            = null,
 
-        )
+            )
     data class NineConsuSources (
-        @JsonProperty("url"    ) var url    : String?  = null,
-        @JsonProperty("isM3U8" ) var isM3U8 : Boolean? = null
+            @JsonProperty("url"    ) var url    : String?  = null,
+            @JsonProperty("isM3U8" ) var isM3U8 : Boolean? = null
     )
     data class ServerHeaders (
 
-        @JsonProperty("Referer"    ) var referer    : String? = null,
-        @JsonProperty("User-Agent" ) var userAgent : String? = null
+            @JsonProperty("Referer"    ) var referer    : String? = null,
+            @JsonProperty("User-Agent" ) var userAgent : String? = null
 
     )
     data class SubDubInfo (
-        @JsonProperty("ID"   ) val ID   : String,
-        @JsonProperty("type" ) val type : String
+            @JsonProperty("ID"   ) val ID   : String,
+            @JsonProperty("type" ) val type : String
     )
 
     private fun serverName(serverID: String?): String? {
         val sss =
-            when (serverID) {
-                "41" -> "vidstream"
-                "44" -> "filemoon"
-                "40" -> "streamtape"
-                "35" -> "mp4upload"
-                else -> null
-            }
+                when (serverID) {
+                    "41" -> "vidplay"
+                    "44" -> "filemoon"
+                    "40" -> "streamtape"
+                    "35" -> "mp4upload"
+                    else -> null
+                }
         return sss
     }
 
 
     data class ConsumetVrfHelper (
-        @JsonProperty("url"      ) var url      : String,
-        @JsonProperty("vrfQuery" ) var vrfQuery : String
+            @JsonProperty("url"      ) var url      : String,
+            @JsonProperty("vrfQuery" ) var vrfQuery : String
     )
     private suspend fun consumetVrf(input: String): ConsumetVrfHelper{
         return app.get("https://9anime.eltik.net/vrf?query=$input&apikey=lagrapps").parsed<ConsumetVrfHelper>()
@@ -330,11 +422,29 @@ class NineAnimeProvider : MainAPI() {
         return ses.substringAfter("url\":\"").substringBefore("\"")
     }
 
+    data class AniwaveMediaInfo (
+
+            @JsonProperty("result" ) val result : AniwaveResult? = AniwaveResult()
+
+    )
+
+
+    data class AniwaveResult (
+
+            @JsonProperty("sources" ) var sources : ArrayList<AniwaveTracks> = arrayListOf(),
+            @JsonProperty("tracks"  ) var tracks  : ArrayList<AniwaveTracks>  = arrayListOf()
+
+    )
+    data class AniwaveTracks (
+            @JsonProperty("file"    ) var file    : String?  = null,
+            @JsonProperty("label"   ) var label   : String?  = null,
+    )
+
     override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
+            data: String,
+            isCasting: Boolean,
+            subtitleCallback: (SubtitleFile) -> Unit,
+            callback: (ExtractorLink) -> Unit
     ): Boolean {
         val parseData = AppUtils.parseJson<SubDubInfo>(data)
         val sa = consumetVrf(parseData.ID)
@@ -349,7 +459,7 @@ class NineAnimeProvider : MainAPI() {
         }
         aas.apmap { (sName, sId) ->
             val nName = if (sName == null) "mycloud" else sName
-            val vids = nName == "vidstream"
+            val vids = nName == "vidplay"
             val mclo = nName == "mycloud"
             if (vids || mclo) {
                 val sae = consumetVrf(sId)
@@ -372,25 +482,23 @@ class NineAnimeProvider : MainAPI() {
 
                     val ref = if (vids) "https://vidstream.pro/" else "https://mcloud.to/"
 
-                    val ssae = app.get(ssaeUrl, headers = mapOf("Referer" to ref)).text
-                    val reg2 = Regex("((https|http).*list.*(m3u8|.mp4))")
-                    val m3u8 = reg2.find(ssae)?.destructured?.component1() ?: ""
+                    //val ssae = app.get(ssaeUrl, headers = mapOf("Referer" to ref)).text
 
-                    val name = if (vids) "Vidstream" else "MyCloud"
-                    generateM3u8(
-                        name,
-                        m3u8.replace("#.mp4",""),
-                        ref
-                    ).apmap {
-                        callback(
-                            ExtractorLink(
+                    val resultJson = app.get(ssaeUrl, headers = mapOf("Referer" to ref)).parsedSafe<AniwaveMediaInfo>()
+                    val name = if (vids) "Vidplay" else "MyCloud"
+                    resultJson?.result?.sources?.apmap {
+                        val source = it.file ?: ""
+                        generateM3u8(
                                 name,
-                                name,
-                                it.url,
-                                ref,
-                                getQualityFromName(it.quality.toString()),
-                                true
-                            )
+                                source,
+                                ref
+                        ).forEach(callback)
+                    }
+                    resultJson?.result?.tracks?.apmap {
+                        val subtitle = it.file ?: ""
+                        val lang = it.label ?: ""
+                        subtitleCallback.invoke(
+                                SubtitleFile(lang, subtitle)
                         )
                     }
                 }

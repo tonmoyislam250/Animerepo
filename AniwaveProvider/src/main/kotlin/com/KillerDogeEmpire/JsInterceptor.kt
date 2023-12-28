@@ -14,7 +14,7 @@ import com.lagradost.cloudstream3.USER_AGENT
 import com.lagradost.cloudstream3.utils.Coroutines
 import com.lagradost.cloudstream3.utils.Coroutines.main
 import com.lagradost.nicehttp.requestCreator
-import com.KillerDogeEmpire.NineAnimeProviderPlugin.Companion.postFunction
+import com.KillerDogeEmpire.AniwaveProviderPlugin.Companion.postFunction
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import java.util.concurrent.CountDownLatch
@@ -86,7 +86,7 @@ class JsInterceptor(private val serverid: String, private val lang: String) : In
                     override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
                         if (serverid == "41") {
                             if (!request?.url.toString().contains("vidstream") &&
-                                !request?.url.toString().contains("vizcloud")
+                                    !request?.url.toString().contains("vizcloud")
                             ) return null
                         }
                         if (serverid == "28") {
