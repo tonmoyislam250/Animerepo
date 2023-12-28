@@ -1,4 +1,4 @@
-version = 5
+version = 7
 
 
 cloudstream {
@@ -6,7 +6,7 @@ cloudstream {
     // All of these properties are optional, you can safely remove them
 
     description = "type .nofap in discord - Full Length"
-    authors = listOf("KillerDogeEmpire")
+    authors = listOf("KillerDogeEmpire","coxju")
 
     /**
      * Status int as the following:
@@ -17,7 +17,7 @@ cloudstream {
      * */
     status = 1 // will be 3 if unspecified
     tvTypes = listOf(
-        "NSFW",
+            "NSFW",
     )
 
     iconUrl = "https://www.google.com/s2/favicons?domain=noodlemagazine.com/&sz=%size%"
