@@ -86,7 +86,7 @@ class JsInterceptor(private val serverid: String, private val lang: String) : In
                     override fun shouldInterceptRequest(view: WebView?, request: WebResourceRequest?): WebResourceResponse? {
                         if (serverid == "41") {
                             if (!request?.url.toString().contains("vidstream") &&
-                                    !request?.url.toString().contains("vizcloud")
+                                !request?.url.toString().contains("vizcloud")
                             ) return null
                         }
                         if (serverid == "28") {

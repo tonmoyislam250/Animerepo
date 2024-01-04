@@ -1,13 +1,13 @@
 // use an integer for version numbers
-version = 35
+version = 37
 
 
 cloudstream {
     language = "en"
     // All of these properties are optional, you can safely remove them
 
-    description = "Watch Aniwave/9anime, also check out Enimax's app/chrome extension, He was a big help for fixing the extension, here is the link https://github.com/enimax-anime/enimax"
-    authors = listOf("Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
+    description = "Watch Aniwave/9anime, I have had reports saying homepage doesn't work the first time but retrying should fix it"
+    authors = listOf("Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
 
     /**
      * Status int as the following:
@@ -18,8 +18,8 @@ cloudstream {
      * */
     status = 1 // will be 3 if unspecified
     tvTypes = listOf(
-            "Anime",
-            "OVA",
+        "Anime",
+        "OVA",
     )
 
     iconUrl = "https://www.google.com/s2/favicons?domain=aniwave.to&sz=%size%"
