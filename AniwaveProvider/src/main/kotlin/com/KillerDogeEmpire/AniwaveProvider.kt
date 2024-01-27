@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addDuration
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import com.lagradost.cloudstream3.utils.M3u8Helper.Companion.generateM3u8
+import com.lagradost.cloudstream3.syncproviders.SyncIdName
 import kotlinx.coroutines.delay
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
@@ -20,6 +21,7 @@ class AniwaveProvider : MainAPI() {
     override val hasMainPage = true
     override val hasChromecastSupport = true
     override val hasDownloadSupport = true
+    override val supportedSyncNames = setOf(SyncIdName.Anilist)
     override val supportedTypes = setOf(TvType.Anime)
     override val hasQuickSearch = true
 
@@ -538,4 +540,66 @@ class AniwaveProvider : MainAPI() {
         }
         return true
     }
+
+    override suspend fun getLoadUrl(name: SyncIdName, id: String): String? {
+        val syncId = id.split("/").last()
+
+        //creating query for Anilist API and fetching data using POST method
+        val url = "https://graphql.anilist.co"
+        val query = """
+            query {
+                Media(id: $syncId, type: ANIME) {
+                    title {
+                        romaji
+                        english
+                    }
+                    season
+                    seasonYear
+                }
+            }
+        """
+        val res = app.post(url,
+            headers = mapOf(
+                "Accept"  to "application/json",
+                "Content-Type" to "application/json",
+            ),
+            data = mapOf(
+                "query" to query,
+            )
+        ).parsedSafe<SyncInfo>()
+
+        //formatting the JSON response to search on aniwave site
+        val anilistData = res?.data?.media ?: null
+        val title = anilistData?.title?.romaji ?: anilistData?.title?.english
+        val year = anilistData?.year
+        val season = anilistData?.season
+        val searchUrl = "$mainUrl/filter?keyword=${title}&year%5B%5D=${year}&season%5B%5D=unknown&season%5B%5D=${season?.lowercase()}&sort=recently_updated"
+
+        //searching the anime on aniwave site using advance filter and capturing the url from search result
+        val document = app.get(searchUrl).document
+        val syncUrl = document.select("#list-items div.info div.b1 > a").find {
+            it.attr("data-jp").equals(title, true)
+        }?.attr("href")
+        return fixUrl(syncUrl ?: return null)
+
+    }
+
+    data class SyncTitle(
+        @JsonProperty("romaji") val romaji: String? = null,
+        @JsonProperty("english") val english: String? = null,
+    )
+
+    data class Media(
+        @JsonProperty("title") val title: SyncTitle? = null,
+        @JsonProperty("seasonYear") val year: Int? = null,
+        @JsonProperty("season") val season: String? = null,
+    )
+    
+    data class Data(
+        @JsonProperty("Media") val media: Media? = null,
+    )
+    
+    data class SyncInfo(
+        @JsonProperty("data") val data: Data? = null,
+    )
 }
