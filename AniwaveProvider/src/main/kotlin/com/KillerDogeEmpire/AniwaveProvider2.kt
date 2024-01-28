@@ -20,9 +20,9 @@ import com.lagradost.cloudstream3.syncproviders.AccountManager
 import com.lagradost.cloudstream3.syncproviders.providers.SimklApi
 //import android.util.Log (only required for debugging)
 
-open class AniwaveProvider : MainAPI() {
+class AniwaveProvider2 : AniwaveProvider() {
     override var mainUrl = "https://aniwave.to"
-    override var name = "Aniwave/9Anime"
+    override var name = "Aniwave/9Anime(Simkl)"
     override val hasMainPage = true
     override val hasChromecastSupport = true
     override val hasDownloadSupport = true
@@ -322,6 +322,20 @@ open class AniwaveProvider : MainAPI() {
             Pair("S-Sub", 2),
         )
 
+        //Reading info from web page to fetch anilistId
+        val titleRomaji = (info.selectFirst(".title") ?: info.selectFirst(".d-title"))?.attr("data-jp") ?: ""
+        val premieredDetails = info.select(".bmeta > .meta > div").find {
+            it.text().contains("Premiered: ", true)
+        }?.selectFirst("span > a")?.text()
+        val season = premieredDetails?.split(" ")?.get(0) ?: ""
+        val year = premieredDetails?.split(" ")?.get(1)?.toInt() ?: 0
+
+        //fetching anilistId
+        val anilistData = aniAPICall(AniwaveUtils.aniQuery( titleRomaji, year, season))
+
+        //fetching simklId using anilistId
+        val simklId = AccountManager.simklApi.searchByIds(mapOf(SimklApi.Companion.SyncServices.AniList to anilistData?.id.toString()))?.firstOrNull()?.ids?.simkl
+
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             addEpisodes(DubStatus.Dubbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
@@ -336,6 +350,9 @@ open class AniwaveProvider : MainAPI() {
             this.showStatus = status
             this.type = typetwo
             addDuration(duration)
+            addAniListId(anilistData?.id)
+            addMalId(anilistData?.idMal)
+            addSimklId(simklId)
         }
     }
 
