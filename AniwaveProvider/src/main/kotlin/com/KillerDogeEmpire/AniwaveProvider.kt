@@ -13,20 +13,18 @@ import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.net.URLEncoder
-import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
-import com.lagradost.cloudstream3.LoadResponse.Companion.addMalId
-import com.lagradost.cloudstream3.LoadResponse.Companion.addSimklId
-import com.lagradost.cloudstream3.syncproviders.AccountManager
-import com.lagradost.cloudstream3.syncproviders.providers.SimklApi
 //import android.util.Log (only required for debugging)
 
-open class AniwaveProvider : MainAPI() {
+class AniwaveProvider : MainAPI() {
     override var mainUrl = "https://aniwave.to"
     override var name = "Aniwave/9Anime"
     override val hasMainPage = true
     override val hasChromecastSupport = true
     override val hasDownloadSupport = true
-    override val supportedSyncNames = setOf(SyncIdName.Anilist)
+    override val supportedSyncNames = setOf(
+        SyncIdName.Anilist,
+        SyncIdName.MyAnimeList
+    )
     override val supportedTypes = setOf(TvType.Anime)
     override val hasQuickSearch = true
 
@@ -550,7 +548,7 @@ open class AniwaveProvider : MainAPI() {
         val syncId = id.split("/").last()
 
         //formatting the JSON response to search on aniwave site
-        val anilistData = aniAPICall(AniwaveUtils.aniQuery(syncId.toInt()))
+        val anilistData = aniAPICall(AniwaveUtils.aniQuery(name, syncId.toInt()))
         val title = anilistData?.title?.romaji ?: anilistData?.title?.english
         val year = anilistData?.year
         val season = anilistData?.season
@@ -565,7 +563,7 @@ open class AniwaveProvider : MainAPI() {
 
     }
 
-    suspend private fun aniAPICall(query: String): Media? {
+    private suspend fun aniAPICall(query: String): Media? {
         //Fetching data using POST method
         val url = "https://graphql.anilist.co"
         val res = app.post(url,
