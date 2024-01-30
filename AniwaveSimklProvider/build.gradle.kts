@@ -1,13 +1,13 @@
 // use an integer for version numbers
-version = 38
+version = 40
 
 
 cloudstream {
     language = "en"
     // All of these properties are optional, you can safely remove them
 
-    description = "Watch Aniwave/9anime, I have had reports saying homepage doesn't work the first time but retrying should fix it"
-    authors = listOf("Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
+    description = "Watch Aniwave/9anime (with Simkl sync), I have had reports saying homepage doesn't work the first time but retrying should fix it"
+    authors = listOf("Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman, RowdyRushya")
 
     /**
      * Status int as the following:

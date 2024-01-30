@@ -17,7 +17,7 @@ import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
 //import android.util.Log (only required for debugging)
 
 class AniwaveSimklProvider : MainAPI() {
-    override var mainUrl = "https://aniwave.to"
+    override var mainUrl = "https://aniwave.vc"
     override var name = "Aniwave/9Anime (Simkl)"
     override val hasMainPage = true
     override val hasChromecastSupport = true
