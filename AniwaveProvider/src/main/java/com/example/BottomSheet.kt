@@ -66,6 +66,40 @@ class BottomFragment(private val plugin: Plugin) : BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        val simklSyncBtnGroup = view.findView<RadioGroup>("simkl_sync_group")
+        val simklSyncYesBtn = view.findView<RadioButton>("simkl_sync_yes")
+        val simklSyncNoBtn = view.findView<RadioButton>("simkl_sync_no")
+
+        simklSyncYesBtn.setOnClickListener(object : OnClickListener {
+            override fun onClick(btn: View?) {
+                AniwaveProviderPlugin.aniwaveSimklSync = true
+                simklSyncBtnGroup.check(simklSyncYesBtn.id)
+                Toast.makeText(
+                        context,
+                        "Restart the app",
+                        Toast.LENGTH_SHORT
+                    ).show()
+            }
+        })
+
+        simklSyncNoBtn.setOnClickListener(object : OnClickListener {
+            override fun onClick(btn: View?) {
+                AniwaveProviderPlugin.aniwaveSimklSync = false
+                simklSyncBtnGroup.check(simklSyncNoBtn.id)
+                Toast.makeText(
+                        context,
+                        "Restart the app",
+                        Toast.LENGTH_SHORT
+                    ).show()
+            }
+        })
+
+        if(AniwaveProviderPlugin.aniwaveSimklSync) {
+            simklSyncBtnGroup.check(simklSyncYesBtn.id)
+        } else {
+            simklSyncBtnGroup.check(simklSyncNoBtn.id)
+        }
     }
 
     

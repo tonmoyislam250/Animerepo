@@ -13,6 +13,7 @@ import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.net.URLEncoder
+import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
 //import android.util.Log (only required for debugging)
 
 class AniwaveProvider : MainAPI() {
@@ -206,103 +207,56 @@ class AniwaveProvider : MainAPI() {
             //season 1 Dubbed
             //Season 2 SofSubbed
             //SUB, SOFT SUB and DUB adb logcat -s "TAGNAME"
-            if (dataDub == 1 && ids.size == 3) {
+
+            if (ids.size > 0) {
                 ids.getOrNull(0)?.let { sub ->
                     val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
                     subEpisodes.add(
                         newEpisode(epdd) {
                             this.episode = epNum
                             this.name = epTitle
-                            this.season = -1
+                            // this.season = -1
                         }
                     )
                 }
 
-                ids.getOrNull(1)?.let { softsub ->
-                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
-                    softsubeps.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 2
+                if (ids.size > 1) {
+                    if (dataDub == 0 || ids.size > 2) {
+                        ids.getOrNull(1)?.let { softsub ->
+                            val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
+                            softsubeps.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 2
+                                }
+                            )
                         }
-                    )
-                }
-
-                ids.getOrNull(2)?.let { dub ->
-                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
-                    dubEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 1
+                    } else {
+                        ids.getOrNull(1)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 1
+                                }
+                            )
                         }
-                    )
-                }
+                    }
 
-            }
-
-
-            //Just SUB and DUB
-            if (dataDub == 1 && ids.size == 2) {
-                ids.getOrNull(1)?.let { dub ->
-                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
-                    dubEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 1
+                    if (ids.size > 2) {
+                        ids.getOrNull(2)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 1
+                                }
+                            )
                         }
-                    )
-                }
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
-                }
-            }
-
-            //Just SUB and SOFT SUB
-            if (dataDub == 0 && ids.size == 2) {
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
-                }
-
-                ids.getOrNull(1)?.let { softsub ->
-                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
-                    softsubeps.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 2
-                        }
-                    )
-                }
-            }
-
-            //Just SUB
-            if (dataDub == 0 && ids.size == 1) {
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
+                    }
                 }
             }
         }
@@ -319,12 +273,20 @@ class AniwaveProvider : MainAPI() {
             Pair("Dub", 1),
             Pair("S-Sub", 2),
         )
+        
+        //Reading info from web page to fetch anilistData
+        val titleRomaji = (info.selectFirst(".title") ?: info.selectFirst(".d-title"))?.attr("data-jp") ?: ""
+        val premieredDetails = info.select(".bmeta > .meta > div").find {
+            it.text().contains("Premiered: ", true)
+        }?.selectFirst("span > a")?.text()?.split(" ")
+        val season = premieredDetails?.get(0).toString()
+        val year = premieredDetails?.get(1)?.toInt() ?: 0
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             addEpisodes(DubStatus.Dubbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
             addEpisodes(DubStatus.Subbed, softsubeps)
-            this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
+            // this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
             plot = info.selectFirst(".synopsis > .shorting > .content")?.text()
             this.posterUrl = poster
             rating = ratingElement.attr("data-score").toFloat().times(1000f).toInt()
@@ -332,7 +294,10 @@ class AniwaveProvider : MainAPI() {
             this.tags = genres
             this.recommendations = recss
             this.showStatus = status
-            this.type = typetwo
+            if (AniwaveProviderPlugin.aniwaveSimklSync)
+                addAniListId(aniAPICall(AniwaveUtils.aniQuery( titleRomaji, year, season))?.id)
+            else
+                this.type = typetwo
             addDuration(duration)
         }
     }

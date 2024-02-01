@@ -50,5 +50,11 @@ class AniwaveProviderPlugin : Plugin() {
             set(value) {
                 setKey("ANIWAVE_CURRENT_SERVER", value)
             }
+        
+        var aniwaveSimklSync: Boolean
+            get() = getKey("ANIWAVE_SIMKL_SYNC") ?: false
+            set(value) {
+                setKey("ANIWAVE_SIMKL_SYNC", value)
+            }
     }
 }
