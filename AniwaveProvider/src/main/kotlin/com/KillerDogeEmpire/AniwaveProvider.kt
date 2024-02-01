@@ -16,7 +16,7 @@ import java.net.URLEncoder
 //import android.util.Log (only required for debugging)
 
 class AniwaveProvider : MainAPI() {
-    override var mainUrl = "https://aniwave.to"
+    override var mainUrl = AniwaveProviderPlugin.currentAniwaveServer
     override var name = "Aniwave/9Anime"
     override val hasMainPage = true
     override val hasChromecastSupport = true
