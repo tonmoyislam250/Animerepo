@@ -4,6 +4,7 @@ import android.util.Base64
 import java.net.URLDecoder
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
+import com.lagradost.cloudstream3.syncproviders.SyncIdName
 
 object AniwaveUtils {
 
@@ -52,5 +53,48 @@ object AniwaveUtils {
             vrf[i] = vrf[i].plus(shift).toByte()
         }
         return vrf
+    }
+
+    fun aniQuery(name: SyncIdName, id: Int): String {
+        //creating query for Anilist API using ID
+        val idType = when (name) {
+            SyncIdName.MyAnimeList -> "idMal"
+            else -> "id"
+
+        }
+        val query = """
+            query {
+                Media($idType: $id, type: ANIME) {
+                    title {
+                        romaji
+                        english
+                    }
+                    id
+                    idMal
+                    season
+                    seasonYear
+                }
+            }
+        """
+        return query
+    }
+
+    fun aniQuery(titleRomaji: String, year: Int, season: String): String {
+        //creating query for Anilist API using name and other details
+        val query = """
+            query {
+                Media(search: "$titleRomaji", season:${season.uppercase()}, seasonYear:$year, type: ANIME) {
+                    title {
+                        romaji
+                        english
+                    }
+                    id
+                    idMal
+                    season
+                    seasonYear
+                }
+            }
+        """
+        return query
     }
 }

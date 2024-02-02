@@ -13,15 +13,19 @@ import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.net.URLEncoder
+import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
 //import android.util.Log (only required for debugging)
 
 class AniwaveProvider : MainAPI() {
-    override var mainUrl = "https://aniwave.to"
+    override var mainUrl = AniwaveProviderPlugin.currentAniwaveServer
     override var name = "Aniwave/9Anime"
     override val hasMainPage = true
     override val hasChromecastSupport = true
     override val hasDownloadSupport = true
-    override val supportedSyncNames = setOf(SyncIdName.Anilist)
+    override val supportedSyncNames = setOf(
+        SyncIdName.Anilist,
+        SyncIdName.MyAnimeList
+    )
     override val supportedTypes = setOf(TvType.Anime)
     override val hasQuickSearch = true
 
@@ -203,103 +207,56 @@ class AniwaveProvider : MainAPI() {
             //season 1 Dubbed
             //Season 2 SofSubbed
             //SUB, SOFT SUB and DUB adb logcat -s "TAGNAME"
-            if (dataDub == 1 && ids.size == 3) {
+
+            if (ids.size > 0) {
                 ids.getOrNull(0)?.let { sub ->
                     val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
                     subEpisodes.add(
                         newEpisode(epdd) {
                             this.episode = epNum
                             this.name = epTitle
-                            this.season = -1
+                            // this.season = -1
                         }
                     )
                 }
 
-                ids.getOrNull(1)?.let { softsub ->
-                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
-                    softsubeps.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 2
+                if (ids.size > 1) {
+                    if (dataDub == 0 || ids.size > 2) {
+                        ids.getOrNull(1)?.let { softsub ->
+                            val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
+                            softsubeps.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 2
+                                }
+                            )
                         }
-                    )
-                }
-
-                ids.getOrNull(2)?.let { dub ->
-                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
-                    dubEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 1
+                    } else {
+                        ids.getOrNull(1)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 1
+                                }
+                            )
                         }
-                    )
-                }
+                    }
 
-            }
-
-
-            //Just SUB and DUB
-            if (dataDub == 1 && ids.size == 2) {
-                ids.getOrNull(1)?.let { dub ->
-                    val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
-                    dubEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 1
+                    if (ids.size > 2) {
+                        ids.getOrNull(2)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    // this.season = 1
+                                }
+                            )
                         }
-                    )
-                }
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
-                }
-            }
-
-            //Just SUB and SOFT SUB
-            if (dataDub == 0 && ids.size == 2) {
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
-                }
-
-                ids.getOrNull(1)?.let { softsub ->
-                    val epdd = "{\"ID\":\"$softsub\",\"type\":\"softsub\"}"
-                    softsubeps.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = 2
-                        }
-                    )
-                }
-            }
-
-            //Just SUB
-            if (dataDub == 0 && ids.size == 1) {
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
-                        }
-                    )
+                    }
                 }
             }
         }
@@ -316,12 +273,20 @@ class AniwaveProvider : MainAPI() {
             Pair("Dub", 1),
             Pair("S-Sub", 2),
         )
+        
+        //Reading info from web page to fetch anilistData
+        val titleRomaji = (info.selectFirst(".title") ?: info.selectFirst(".d-title"))?.attr("data-jp") ?: ""
+        val premieredDetails = info.select(".bmeta > .meta > div").find {
+            it.text().contains("Premiered: ", true)
+        }?.selectFirst("span > a")?.text()?.split(" ")
+        val season = premieredDetails?.get(0).toString()
+        val year = premieredDetails?.get(1)?.toInt() ?: 0
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
             addEpisodes(DubStatus.Dubbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
             addEpisodes(DubStatus.Subbed, softsubeps)
-            this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
+            // this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
             plot = info.selectFirst(".synopsis > .shorting > .content")?.text()
             this.posterUrl = poster
             rating = ratingElement.attr("data-score").toFloat().times(1000f).toInt()
@@ -329,7 +294,10 @@ class AniwaveProvider : MainAPI() {
             this.tags = genres
             this.recommendations = recss
             this.showStatus = status
-            this.type = typetwo
+            if (AniwaveProviderPlugin.aniwaveSimklSync)
+                addAniListId(aniAPICall(AniwaveUtils.aniQuery( titleRomaji, year, season))?.id)
+            else
+                this.type = typetwo
             addDuration(duration)
         }
     }
@@ -544,32 +512,8 @@ class AniwaveProvider : MainAPI() {
     override suspend fun getLoadUrl(name: SyncIdName, id: String): String? {
         val syncId = id.split("/").last()
 
-        //creating query for Anilist API and fetching data using POST method
-        val url = "https://graphql.anilist.co"
-        val query = """
-            query {
-                Media(id: $syncId, type: ANIME) {
-                    title {
-                        romaji
-                        english
-                    }
-                    season
-                    seasonYear
-                }
-            }
-        """
-        val res = app.post(url,
-            headers = mapOf(
-                "Accept"  to "application/json",
-                "Content-Type" to "application/json",
-            ),
-            data = mapOf(
-                "query" to query,
-            )
-        ).parsedSafe<SyncInfo>()
-
         //formatting the JSON response to search on aniwave site
-        val anilistData = res?.data?.media ?: null
+        val anilistData = aniAPICall(AniwaveUtils.aniQuery(name, syncId.toInt()))
         val title = anilistData?.title?.romaji ?: anilistData?.title?.english
         val year = anilistData?.year
         val season = anilistData?.season
@@ -584,6 +528,23 @@ class AniwaveProvider : MainAPI() {
 
     }
 
+    private suspend fun aniAPICall(query: String): Media? {
+        //Fetching data using POST method
+        val url = "https://graphql.anilist.co"
+        val res = app.post(url,
+            headers = mapOf(
+                "Accept"  to "application/json",
+                "Content-Type" to "application/json",
+            ),
+            data = mapOf(
+                "query" to query,
+            )
+        ).parsedSafe<SyncInfo>()
+
+        return res?.data?.media
+    }
+    
+    //JSON formatter for data fetched from anilistApi
     data class SyncTitle(
         @JsonProperty("romaji") val romaji: String? = null,
         @JsonProperty("english") val english: String? = null,
@@ -591,8 +552,10 @@ class AniwaveProvider : MainAPI() {
 
     data class Media(
         @JsonProperty("title") val title: SyncTitle? = null,
-        @JsonProperty("seasonYear") val year: Int? = null,
+        @JsonProperty("id") val id: Int? = null,
+        @JsonProperty("idMal") val idMal: Int? = null,
         @JsonProperty("season") val season: String? = null,
+        @JsonProperty("seasonYear") val year: Int? = null,
     )
     
     data class Data(
