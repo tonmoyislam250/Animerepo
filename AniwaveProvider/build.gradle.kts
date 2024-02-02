@@ -1,5 +1,5 @@
 // use an integer for version numbers
-version = 39
+version = 40
 
 
 cloudstream {
@@ -7,7 +7,7 @@ cloudstream {
     // All of these properties are optional, you can safely remove them
 
     description = "Watch Aniwave/9anime, I have had reports saying homepage doesn't work the first time but retrying should fix it"
-    authors = listOf("Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
+    authors = listOf("RowdyRushya, Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman")
 
     /**
      * Status int as the following:
