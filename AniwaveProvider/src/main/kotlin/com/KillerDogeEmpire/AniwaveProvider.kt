@@ -203,9 +203,9 @@ class AniwaveProvider : MainAPI() {
             val epTitle = element.selectFirst("span.d-title")?.text()
             //val filler = element.hasClass("filler")
 
-            //season -3 HARDSUBBED
+            //season -1 HARDSUBBED
             //season -2 Dubbed
-            //Season -1 SofSubbed
+            //Season -3 SofSubbed
             //SUB, SOFT SUB and DUB adb logcat -s "TAGNAME"
 
             if (ids.size > 0) {
@@ -215,7 +215,7 @@ class AniwaveProvider : MainAPI() {
                         newEpisode(epdd) {
                             this.episode = epNum
                             this.name = epTitle
-                            this.season = -3
+                            this.season = -1
                         }
                     )
                 }
@@ -228,7 +228,7 @@ class AniwaveProvider : MainAPI() {
                                 newEpisode(epdd) {
                                     this.episode = epNum
                                     this.name = epTitle
-                                    this.season = -1
+                                    this.season = -3
                                 }
                             )
                         }
@@ -261,17 +261,17 @@ class AniwaveProvider : MainAPI() {
             }
         }
 
-        //season -3 HARDSUBBED
+        //season -1 HARDSUBBED
         //season -2 Dubbed
-        //Season -1 SofSubbed
+        //Season -3 SofSubbed
 
         println("SUBstat ${DubStatus.Subbed.name}")
         println("SUBstat ${DubStatus.Subbed.toString()}")
 
         val names = listOf(
-            Pair("Sub", -3),
+            Pair("Sub", -1),
             Pair("Dub", -2),
-            Pair("S-Sub", -1),
+            Pair("S-Sub", -3),
         )
         
         //Reading info from web page to fetch anilistData
