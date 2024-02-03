@@ -203,9 +203,9 @@ class AniwaveProvider : MainAPI() {
             val epTitle = element.selectFirst("span.d-title")?.text()
             //val filler = element.hasClass("filler")
 
-            //season -1 HARDSUBBED
-            //season 1 Dubbed
-            //Season 2 SofSubbed
+            //season -3 HARDSUBBED
+            //season -2 Dubbed
+            //Season -1 SofSubbed
             //SUB, SOFT SUB and DUB adb logcat -s "TAGNAME"
 
             if (ids.size > 0) {
@@ -215,7 +215,7 @@ class AniwaveProvider : MainAPI() {
                         newEpisode(epdd) {
                             this.episode = epNum
                             this.name = epTitle
-                            // this.season = -1
+                            this.season = -3
                         }
                     )
                 }
@@ -228,7 +228,7 @@ class AniwaveProvider : MainAPI() {
                                 newEpisode(epdd) {
                                     this.episode = epNum
                                     this.name = epTitle
-                                    // this.season = 2
+                                    this.season = -1
                                 }
                             )
                         }
@@ -239,7 +239,7 @@ class AniwaveProvider : MainAPI() {
                                 newEpisode(epdd) {
                                     this.episode = epNum
                                     this.name = epTitle
-                                    // this.season = 1
+                                    this.season = -2
                                 }
                             )
                         }
@@ -252,7 +252,7 @@ class AniwaveProvider : MainAPI() {
                                 newEpisode(epdd) {
                                     this.episode = epNum
                                     this.name = epTitle
-                                    // this.season = 1
+                                    this.season = -2
                                 }
                             )
                         }
@@ -261,17 +261,17 @@ class AniwaveProvider : MainAPI() {
             }
         }
 
-        //season -1 HARDSUBBED
-        //season 1 Dubbed
-        //Season 2 SofSubbed
+        //season -3 HARDSUBBED
+        //season -2 Dubbed
+        //Season -1 SofSubbed
 
         println("SUBstat ${DubStatus.Subbed.name}")
         println("SUBstat ${DubStatus.Subbed.toString()}")
 
         val names = listOf(
-            Pair("Sub", -1),
-            Pair("Dub", 1),
-            Pair("S-Sub", 2),
+            Pair("Sub", -3),
+            Pair("Dub", -2),
+            Pair("S-Sub", -1),
         )
         
         //Reading info from web page to fetch anilistData
@@ -283,10 +283,10 @@ class AniwaveProvider : MainAPI() {
         val year = premieredDetails?.get(1)?.toInt() ?: 0
 
         return newAnimeLoadResponse(title, url, TvType.Anime) {
-            addEpisodes(DubStatus.Dubbed, dubEpisodes)
+            addEpisodes(DubStatus.Subbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
             addEpisodes(DubStatus.Subbed, softsubeps)
-            // this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
+            this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
             plot = info.selectFirst(".synopsis > .shorting > .content")?.text()
             this.posterUrl = poster
             rating = ratingElement.attr("data-score").toFloat().times(1000f).toInt()
