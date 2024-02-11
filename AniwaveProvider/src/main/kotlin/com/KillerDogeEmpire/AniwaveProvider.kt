@@ -100,6 +100,7 @@ class AniwaveProvider : MainAPI() {
             url,
         ).document.select("#list-items a.d-title").mapNotNull {
             val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
+            val img = it.select("img")
             val title = it?.text()
             val subbedEpisodes = it?.selectFirst(".sub")?.text()?.toIntOrNull()
             val dubbedEpisodes = it?.selectFirst(".dub")?.text()?.toIntOrNull()
