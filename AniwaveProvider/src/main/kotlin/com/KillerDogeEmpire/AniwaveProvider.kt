@@ -98,10 +98,9 @@ class AniwaveProvider : MainAPI() {
             "$mainUrl/filter?keyword=${query}"
         return app.get(
             url,
-        ).document.select("#list-items div.ani.poster.tip > a").mapNotNull {
+        ).document.select("#list-items a.d-title > a").mapNotNull {
             val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
-            val img = it.select("img")
-            val title = img.attr("alt")
+            val title = it?.text()
             val subbedEpisodes = it?.selectFirst(".sub")?.text()?.toIntOrNull()
             val dubbedEpisodes = it?.selectFirst(".dub")?.text()?.toIntOrNull()
             newAnimeSearchResponse(title, link) {
