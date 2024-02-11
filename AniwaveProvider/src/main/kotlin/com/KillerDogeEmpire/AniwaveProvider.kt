@@ -99,8 +99,8 @@ class AniwaveProvider : MainAPI() {
         return app.get(
             url,
         ).document.select("#list-items div.inner").mapNotNull {
-            val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
             val a = it.select("a.d-title")
+            val link = fixUrl(a.attr("href") ?: return@mapNotNull null)
             val img = it.select("img")
             val title = a.text()
             val subbedEpisodes = it?.selectFirst(".sub")?.text()?.toIntOrNull()
