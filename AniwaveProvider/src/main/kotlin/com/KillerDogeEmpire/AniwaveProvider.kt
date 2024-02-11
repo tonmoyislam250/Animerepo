@@ -98,7 +98,7 @@ class AniwaveProvider : MainAPI() {
             "$mainUrl/filter?keyword=${query}"
         return app.get(
             url,
-        ).document.select("#list-items a.d-title > a").mapNotNull {
+        ).document.select("#list-items a.d-title").mapNotNull {
             val link = fixUrl(it.attr("href") ?: return@mapNotNull null)
             val title = it?.text()
             val subbedEpisodes = it?.selectFirst(".sub")?.text()?.toIntOrNull()
