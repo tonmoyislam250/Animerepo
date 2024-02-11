@@ -98,7 +98,7 @@ class AniwaveProvider : MainAPI() {
             "$mainUrl/filter?keyword=${query}"
         return app.get(
             url,
-        ).document.select("#list-items div.inner").mapNotNull {
+        ).document.select("#list-items div.inner:has(div.poster)").mapNotNull {
             val a = it.select("a.d-title")
             val link = fixUrl(a.attr("href") ?: return@mapNotNull null)
             val img = it.select("img")
