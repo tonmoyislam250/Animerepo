@@ -169,6 +169,7 @@ class AniwaveProvider : MainAPI() {
         val subEpisodes = ArrayList<Episode>()
         val dubEpisodes = ArrayList<Episode>()
         val softsubeps = ArrayList<Episode>()
+        val uncensored = ArrayList<Episode>()
         val genres =
             doc.select("div.meta:nth-child(1) > div:contains(Genre:) a").mapNotNull { it.text() }
         val recss =
@@ -202,25 +203,52 @@ class AniwaveProvider : MainAPI() {
             val epNum = element.attr("data-num")
                 .toIntOrNull() // might fuck up on 7.5 ect might use data-slug instead
             val epTitle = element.selectFirst("span.d-title")?.text()
+            val isUncen = element.attr("data-slug").contains("uncen")
             //val filler = element.hasClass("filler")
 
             //season -1 HARDSUBBED
             //season -2 Dubbed
             //Season -3 SofSubbed
+            //Season -4 Uncensored
             //SUB, SOFT SUB and DUB adb logcat -s "TAGNAME"
 
             if (ids.size > 0) {
-                ids.getOrNull(0)?.let { sub ->
-                    val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                    subEpisodes.add(
-                        newEpisode(epdd) {
-                            this.episode = epNum
-                            this.name = epTitle
-                            this.season = -1
+                if(isUncen) {
+                    ids.getOrNull(0)?.let { uncen ->
+                        val epdd = "{\"ID\":\"$uncen\",\"type\":\"sub\"}"
+                        uncensored.add(
+                            newEpisode(epdd) {
+                                this.episode = epNum
+                                this.name = epTitle
+                                this.season = -4
+                            }
+                        )
+                    }
+                } else {
+                    if (ids.size == 1 && dataDub == 1) {
+                        ids.getOrNull(0)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    this.season = -2
+                                }
+                            )
                         }
-                    )
+                    } else {
+                        ids.getOrNull(0)?.let { sub ->
+                            val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                            subEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    this.season = -1
+                                }
+                            )
+                        }
+                    }
                 }
-
                 if (ids.size > 1) {
                     if (dataDub == 0 || ids.size > 2) {
                         ids.getOrNull(1)?.let { softsub ->
@@ -273,6 +301,7 @@ class AniwaveProvider : MainAPI() {
             Pair("Sub", -1),
             Pair("Dub", -2),
             Pair("S-Sub", -3),
+            Pair("Uncensored", -4),
         )
         
         //Reading info from web page to fetch anilistData
@@ -287,6 +316,7 @@ class AniwaveProvider : MainAPI() {
             addEpisodes(DubStatus.Subbed, dubEpisodes)
             addEpisodes(DubStatus.Subbed, subEpisodes)
             addEpisodes(DubStatus.Subbed, softsubeps)
+            addEpisodes(DubStatus.Subbed, uncensored)
             this.seasonNames = names.map { (name, int) -> SeasonData(int, name) }
             plot = info.selectFirst(".synopsis > .shorting > .content")?.text()
             this.posterUrl = poster
