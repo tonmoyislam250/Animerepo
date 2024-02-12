@@ -225,15 +225,28 @@ class AniwaveProvider : MainAPI() {
                         )
                     }
                 } else {
-                    ids.getOrNull(0)?.let { sub ->
-                        val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
-                        subEpisodes.add(
-                            newEpisode(epdd) {
-                                this.episode = epNum
-                                this.name = epTitle
-                                this.season = -1
-                            }
-                        )
+                    if (dataDub == 1) {
+                        ids.getOrNull(0)?.let { dub ->
+                            val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
+                            dubEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    this.season = -2
+                                }
+                            )
+                        }
+                    } else {
+                        ids.getOrNull(0)?.let { sub ->
+                            val epdd = "{\"ID\":\"$sub\",\"type\":\"sub\"}"
+                            subEpisodes.add(
+                                newEpisode(epdd) {
+                                    this.episode = epNum
+                                    this.name = epTitle
+                                    this.season = -1
+                                }
+                            )
+                        }
                     }
                 }
                 if (ids.size > 1) {
