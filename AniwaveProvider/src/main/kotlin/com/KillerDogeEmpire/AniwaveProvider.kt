@@ -225,7 +225,7 @@ class AniwaveProvider : MainAPI() {
                         )
                     }
                 } else {
-                    if (dataDub == 1) {
+                    if (ids.size == 1 && dataDub == 1) {
                         ids.getOrNull(0)?.let { dub ->
                             val epdd = "{\"ID\":\"$dub\",\"type\":\"dub\"}"
                             dubEpisodes.add(
