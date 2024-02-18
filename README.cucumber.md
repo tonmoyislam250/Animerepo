@@ -9,7 +9,7 @@
 - [Cheese](/README.cheese.md)
 - [Corn](/README.corn.md)
 
-Listen to Audio Books. Add this repository using this shortcode: [aguaco](https://raw.githubusercontent.com/KillerDogeEmpire/avocado-extensions/builds/repo.json)
+Listen to Audio Books. Add this repository using this shortcode: [Rowdycado](https://raw.githubusercontent.com/Rowdy-Avocado/Avocado-Extensions/builds/repo.json)
 
 ~Click~ eat the cucumber to install it on your phone:
 
