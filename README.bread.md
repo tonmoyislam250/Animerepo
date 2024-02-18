@@ -13,4 +13,4 @@ Listen to Audio Books. Add this repository using this shortcode: [Rowdycado](htt
 
 ~Click~ eat the bread to install it on your phone:
 
-[<img alt="alt_text" width="100px" src="https://discordapp.com/assets/a74bd6e914728e9ba7f10e8f70b75df0.svg"/>](https://self-similarity.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/KillerDogeEmpire/avocado-extensions/builds/repo.json)
+[<img alt="alt_text" width="100px" src="https://discordapp.com/assets/a74bd6e914728e9ba7f10e8f70b75df0.svg"/>](https://self-similarity.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/Rowdy-Avocado/Avocado-Extensions/builds/repo.json)
