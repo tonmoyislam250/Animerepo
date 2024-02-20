@@ -9,8 +9,8 @@
 - [Cheese](/README.cheese.md)
 - [Corn](/README.corn.md)
 
-Listen to Audio Books. Add this repository using this shortcode: [Rowdycado](https://raw.githubusercontent.com/Rowdy-Avocado/Avocado-Extensions/builds/repo.json)
+Listen to Audio Books. Add this repository using this shortcode: [Rowdycado](https://raw.githubusercontent.com/Rowdy-Avocado/Rowdycado-Extensions/builds/repo.json)
 
 ~Click~ eat the cucumber to install it on your phone:
 
-[<img alt="alt_text" width="100px" src="https://discordapp.com/assets/462ae06d5ffb1b8112d15720e6d8e64f.svg"/>](https://self-similarity.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/Rowdy-Avocado/Avocado-Extensions/builds/repo.json)
+[<img alt="alt_text" width="100px" src="https://discordapp.com/assets/462ae06d5ffb1b8112d15720e6d8e64f.svg"/>](https://self-similarity.github.io/http-protocol-redirector?r=cloudstreamrepo://raw.githubusercontent.com/Rowdy-Avocado/Rowdycado-Extensions/builds/repo.json)
