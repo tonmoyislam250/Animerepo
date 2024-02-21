@@ -73,18 +73,7 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
         val details = res.document.select("div#video-about")
         val name = details.select("div.more > h2").text()
 
-        return newMovieLoadResponse(name, url, TvType.Movie, embedUrl) {
-            this.posterUrl = poster
-            // this.plot = details.select("div.description").text()
-            // this.backgroundPosterUrl = bgPoster
-            // this.year = year
-            // this.duration = res.runtime
-            // this.tags = keywords.takeIf { !it.isNullOrEmpty() } ?: genres
-            // this.recommendations = recommendations
-            // this.actors = actors
-            // addTrailer(res.document.select("iframe#iframe-trailer").attr("data-src"))
-            // addImdbId("")
-        }
+        return newMovieLoadResponse(name, url, TvType.Movie, embedUrl) { this.posterUrl = poster }
     }
 
     override suspend fun loadLinks(
@@ -93,7 +82,9 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
+        // if (data.contains("d0000d"))
         D0000dExtractor().getUrl(data, data)?.forEach { link -> callback.invoke(link) }
+        // else loadExtractor(data, data, subtitleCallback, callback)
 
         return true
     }
