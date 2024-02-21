@@ -41,27 +41,16 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val url = request.data + page
         val res = app.get(url)
-
         if (res.code != 200) throw ErrorLoadingException("Could not load data")
-
         val home = searchResponseBuilder(res.document)
-        // res.document.select("article > a").mapNotNull { element ->
-        //     val title = element.attr("title")
-        //     val link = element.attr("href")
-        //     val poster = element.select("img").attr("data-src")
 
-        //     newMovieSearchResponse(title, link) { this.posterUrl = poster }
-        // }
-
-        return newHomePageResponse(request.name, home, true)
+        return newHomePageResponse(HomePageList(request.name, home, true), true)
     }
 
     override suspend fun load(url: String): LoadResponse {
         val res = app.get(url)
 
         if (res.code != 200) throw ErrorLoadingException("Could not load data" + url)
-
-        // val contentId = res.document.select("div.detail_page-watch").attr("data-id")
         val poster =
                 res.document
                         .selectFirst("div.video-player > meta[itemprop=thumbnailUrl]")
@@ -73,7 +62,7 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
         val details = res.document.select("div#video-about")
         val name = details.select("div.more > h2").text()
 
-        return newMovieLoadResponse(name, url, TvType.Movie, embedUrl) { this.posterUrl = poster }
+        return newMovieLoadResponse(name, url, TvType.NSFW, embedUrl) { this.posterUrl = poster }
     }
 
     override suspend fun loadLinks(
@@ -82,10 +71,7 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
-        // if (data.contains("d0000d"))
         D0000dExtractor().getUrl(data, data)?.forEach { link -> callback.invoke(link) }
-        // else loadExtractor(data, data, subtitleCallback, callback)
-
         return true
     }
 
