@@ -10,16 +10,12 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.utils.*
 import kotlin.collections.forEach
 
-class Ultima(val plugin: UltimaPlugin) :
-        MainAPI() { // all providers must be an intstance of MainAPI
+class Ultima(val plugin: UltimaPlugin) : MainAPI() {
     override var name = "Ultima"
     override var supportedTypes = TvType.values().toSet()
     override var lang = "en"
-
-    // enable this when your provider has a main page
     override val hasMainPage = true
 
-    // this function gets called when you search for something
     override suspend fun search(query: String): List<SearchResponse> {
         return listOf<SearchResponse>()
     }

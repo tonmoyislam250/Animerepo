@@ -11,4 +11,9 @@
                 android:topRightRadius="2dp" />
         </shape>
     </item>
+    <item android:state_hovered="true">
+        <shape>
+            <solid android:color="#99FFFFFF" />
+        </shape>
+    </item>
 </selector>

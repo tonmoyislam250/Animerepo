@@ -10,12 +10,15 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.CompoundButton.OnCheckedChangeListener
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.lagradost.cloudstream3.plugins.PluginManager
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -74,6 +77,22 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
 
         val outlineId =
                 plugin.resources!!.getIdentifier("outline", "drawable", "com.KillerDogeEmpire")
+        val saveIconId =
+                plugin.resources!!.getIdentifier("save_icon", "drawable", "com.KillerDogeEmpire")
+
+        val saveBtn = settings.findView<ImageView>("save")
+        saveBtn.setImageDrawable(plugin.resources!!.getDrawable(saveIconId, null))
+        saveBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        saveBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        PluginManager.hotReloadAllLocalPlugins(plugin.activity)
+                        Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
+                }
+        )
+
         providers.forEach { provider ->
             val parentLayoutView =
                     buildExtensionView(provider, parentLayoutId, outlineId, inflater, container)
