@@ -72,19 +72,18 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 plugin.resources!!.getIdentifier("parent_layout", "layout", "com.KillerDogeEmpire")
 
         val childLayoutId =
-                plugin.resources!!.getIdentifier(
-                        "child_checkbox",
-                        "layout",
-                        "com.KillerDogeEmpire"
-                )
+                plugin.resources!!.getIdentifier("child_checkbox", "layout", "com.KillerDogeEmpire")
 
+        val outlineId =
+                plugin.resources!!.getIdentifier("outline", "drawable", "com.KillerDogeEmpire")
         val providers = plugin.fetchSections()
         providers.forEach { provider ->
             val parentElementLayout = plugin.resources!!.getLayout(parentLayoutId)
-            val parentCheckBoxView = inflater.inflate(parentElementLayout, container, false)
-            val parentTextViewBtn = parentCheckBoxView.findView<TextView>("parent_textview")
+            val parentLayoutView = inflater.inflate(parentElementLayout, container, false)
+            val parentTextViewBtn = parentLayoutView.findView<TextView>("parent_textview")
             parentTextViewBtn.text = "▶ " + provider.name
-            val childList = parentCheckBoxView.findView<LinearLayout>("child_list")
+            parentTextViewBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+            val childList = parentLayoutView.findView<LinearLayout>("child_list")
             parentTextViewBtn.setOnClickListener(
                     object : OnClickListener {
                         override fun onClick(btn: View) {
@@ -104,6 +103,7 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 val childCheckBoxView = inflater.inflate(ChildElementLayout, container, false)
                 val childCheckBoxBtn = childCheckBoxView.findView<CheckBox>("child_checkbox")
                 childCheckBoxBtn.text = section.name
+                childCheckBoxBtn.background = plugin.resources!!.getDrawable(outlineId, null)
                 childCheckBoxBtn.isChecked = section.enabled ?: false
                 childCheckBoxBtn.id = View.generateViewId()
                 childCheckBoxBtn.setOnCheckedChangeListener(
@@ -119,7 +119,7 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 )
                 childList.addView(childCheckBoxView)
             }
-            parentLayout.addView(parentCheckBoxView)
+            parentLayout.addView(parentLayoutView)
         }
 
         return settings
