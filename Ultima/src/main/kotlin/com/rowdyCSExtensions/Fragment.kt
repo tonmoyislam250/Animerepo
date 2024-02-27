@@ -30,6 +30,7 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private val providers = plugin.fetchSections()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,77 +72,123 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
         val parentLayoutId =
                 plugin.resources!!.getIdentifier("parent_layout", "layout", "com.KillerDogeEmpire")
 
-        val childLayoutId =
-                plugin.resources!!.getIdentifier("child_checkbox", "layout", "com.KillerDogeEmpire")
-
         val outlineId =
                 plugin.resources!!.getIdentifier("outline", "drawable", "com.KillerDogeEmpire")
-        val providers = plugin.fetchSections()
         providers.forEach { provider ->
-            val parentElementLayout = plugin.resources!!.getLayout(parentLayoutId)
-            val parentLayoutView = inflater.inflate(parentElementLayout, container, false)
-            val parentTextViewBtn = parentLayoutView.findView<TextView>("parent_textview")
-            parentTextViewBtn.text = "▶ " + provider.name
-            parentTextViewBtn.background = plugin.resources!!.getDrawable(outlineId, null)
-            val childList = parentLayoutView.findView<LinearLayout>("child_list")
-            parentTextViewBtn.setOnClickListener(
-                    object : OnClickListener {
-                        override fun onClick(btn: View) {
-                            if (childList.visibility == View.VISIBLE) {
-                                childList.visibility = View.GONE
-                                parentTextViewBtn.text = "▶ " + provider.name
-                            } else {
-                                childList.visibility = View.VISIBLE
-                                parentTextViewBtn.text = "▼ " + provider.name
-                            }
-                        }
-                    }
-            )
-
-            provider.sections?.forEach { section ->
-                val ChildElementLayout = plugin.resources!!.getLayout(childLayoutId)
-                val childCheckBoxView = inflater.inflate(ChildElementLayout, container, false)
-                val childCheckBoxBtn = childCheckBoxView.findView<CheckBox>("child_checkbox")
-                childCheckBoxBtn.text = section.name
-                childCheckBoxBtn.background = plugin.resources!!.getDrawable(outlineId, null)
-                childCheckBoxBtn.isChecked = section.enabled ?: false
-                childCheckBoxBtn.id = View.generateViewId()
-                childCheckBoxBtn.setOnCheckedChangeListener(
-                        object : OnCheckedChangeListener {
-                            override fun onCheckedChanged(
-                                    buttonView: CompoundButton,
-                                    isChecked: Boolean
-                            ) {
-                                section.enabled = isChecked
-                                plugin.currentSections = providers
-                            }
-                        }
-                )
-                childList.addView(childCheckBoxView)
-            }
+            val parentLayoutView =
+                    buildExtensionView(provider, parentLayoutId, outlineId, inflater, container)
             parentLayout.addView(parentLayoutView)
         }
 
         return settings
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        // val imageView = view.findView<ImageView>("imageView")
-        // val imageView2 = view.findView<ImageView>("imageView2")
-        // val textView = view.findView<TextView>("textView")
-        // val textView2 = view.findView<TextView>("textView2")
+    fun buildExtensionView(
+            provider: UltimaPlugin.PluginInfo,
+            parentLayoutId: Int,
+            outlineId: Int,
+            inflater: LayoutInflater,
+            container: ViewGroup?
+    ): View {
+        val parentElementLayout = plugin.resources!!.getLayout(parentLayoutId)
+        val parentLayoutView = inflater.inflate(parentElementLayout, container, false)
+        val parentTextViewBtn = parentLayoutView.findView<TextView>("parent_textview")
 
-        // textView.text = getString("hello_fragment")
-        // textView.setTextAppearance(view.context, R.style.ResultInfoText)
-        // textView2.text = view.context.resources.getText(R.string.legal_notice_text)
-        // // textView2.text = readAllHomes()
+        parentTextViewBtn.text = "▶ " + provider.name
+        parentTextViewBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        val childList = parentLayoutView.findView<LinearLayout>("child_list")
 
-        // imageView.setImageDrawable(getDrawable("ic_android_24dp"))
-        // imageView.imageTintList = ColorStateList.valueOf(view.context.getColor(R.color.white))
+        val childLayoutId =
+                plugin.resources!!.getIdentifier("child_checkbox", "layout", "com.KillerDogeEmpire")
 
-        // imageView2.setImageDrawable(getDrawable("ic_android_24dp"))
-        // imageView2.imageTintList =
-        //         ColorStateList.valueOf(view.context.colorFromAttribute(R.attr.white))
+        parentTextViewBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        if (childList.visibility == View.VISIBLE) {
+                            childList.visibility = View.GONE
+                            parentTextViewBtn.text = "▶ " + provider.name
+                        } else {
+                            childList.visibility = View.VISIBLE
+                            parentTextViewBtn.text = "▼ " + provider.name
+                        }
+                    }
+                }
+        )
+
+        provider.sections?.forEach { section ->
+            val newSectionView =
+                    buildSectionView(section, childLayoutId, outlineId, inflater, container)
+            childList.addView(newSectionView)
+        }
+        return parentLayoutView
     }
+
+    fun buildSectionView(
+            section: UltimaPlugin.SectionInfo,
+            childLayoutId: Int,
+            outlineId: Int,
+            inflater: LayoutInflater,
+            container: ViewGroup?
+    ): View {
+        val ChildElementLayout = plugin.resources!!.getLayout(childLayoutId)
+        val sectionView = inflater.inflate(ChildElementLayout, container, false)
+        val childCheckBoxBtn = sectionView.findView<CheckBox>("child_checkbox")
+
+        childCheckBoxBtn.text = section.name
+        childCheckBoxBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        childCheckBoxBtn.isChecked = section.enabled
+        childCheckBoxBtn.id = View.generateViewId()
+
+        val counterLayout = sectionView.findView<LinearLayout>("counter_layout")
+        counterLayout.visibility = if (section.enabled) View.VISIBLE else View.GONE
+        val decreasePriorityBtn = counterLayout.findView<TextView>("decrease")
+        val priorityTextview = counterLayout.findView<TextView>("priority_count")
+        val increasePriorityBtn = counterLayout.findView<TextView>("increase")
+
+        decreasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        increasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+
+        priorityTextview.text = section.priority.toString()
+
+        childCheckBoxBtn.setOnCheckedChangeListener(
+                object : OnCheckedChangeListener {
+                    override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
+                        section.enabled = isChecked
+                        plugin.currentSections = providers
+                        counterLayout.visibility = if (isChecked) View.VISIBLE else View.GONE
+                    }
+                }
+        )
+
+        decreasePriorityBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        val count = priorityTextview.text.toString().toInt()
+                        if (count > 1) {
+                            section.priority -= 1
+                            plugin.currentSections = providers
+                            priorityTextview.text = (count - 1).toString()
+                        }
+                    }
+                }
+        )
+
+        increasePriorityBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        val count = priorityTextview.text.toString().toInt()
+                        if (count < 50) {
+                            section.priority += 1
+                            plugin.currentSections = providers
+                            priorityTextview.text = (count + 1).toString()
+                        }
+                    }
+                }
+        )
+
+        return sectionView
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {}
 }

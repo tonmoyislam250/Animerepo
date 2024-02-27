@@ -20,10 +20,18 @@
             android:layout_height="wrap_content"
             android:layout_rowWeight="1"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="5dp"
             android:text="Ultima Settings (restart required)"
             android:textSize="20sp"
             android:textStyle="bold" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:textSize="15sp"
+            android:text="set priority next to section (higher number to stay on top)" />
 
         <LinearLayout
             android:id="@+id/parent_list"

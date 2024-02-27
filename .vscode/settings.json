@@ -2,5 +2,8 @@
   "java.configuration.updateBuildConfiguration": "interactive",
   "[kotlin]": {
     "editor.defaultFormatter": "fwcd.kotlin"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
   }
 }
