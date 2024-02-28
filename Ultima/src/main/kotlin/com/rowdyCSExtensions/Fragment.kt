@@ -18,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
 import com.lagradost.cloudstream3.plugins.PluginManager
 
 // TODO: Rename parameter arguments, choose names that match
@@ -86,7 +87,8 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
         saveBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
-                        PluginManager.hotReloadAllLocalPlugins(plugin.activity)
+                        PluginManager.loadAllOnlinePlugins(context!!)
+                        afterPluginsLoadedEvent.invoke(true)
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
                         dismiss()
                     }
