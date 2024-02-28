@@ -87,6 +87,11 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
         saveBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
+                        val pluginData =
+                                PluginManager.getPluginsOnline().find {
+                                    it.internalName.contains("Ultima")
+                                }!!
+                        PluginManager.unloadPlugin(pluginData.filePath)
                         PluginManager.loadAllOnlinePlugins(context!!)
                         afterPluginsLoadedEvent.invoke(true)
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
