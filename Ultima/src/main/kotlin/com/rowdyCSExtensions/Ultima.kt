@@ -59,4 +59,15 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
         }
         throw ErrorLoadingException("Select sections from extension's settings page to show here.")
     }
+
+    override suspend fun load(url: String): LoadResponse {
+        val enabledPlugins = mainPage.map { it.name }
+        val provider = allProviders.filter { it.name in enabledPlugins }
+        for (i in 0 until (provider.size)) {
+            try {
+                return provider.get(i).load(url)!!
+            } catch (e: Throwable) {}
+        }
+        return newMovieLoadResponse("Welcome to Ultima", "", TvType.Others, "")
+    }
 }
