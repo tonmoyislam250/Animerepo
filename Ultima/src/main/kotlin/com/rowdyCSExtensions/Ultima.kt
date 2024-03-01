@@ -1,11 +1,11 @@
 package com.KillerDogeEmpire
 
+import android.util.Log
 import com.KillerDogeEmpire.UltimaPlugin.SectionInfo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.APIHolder.allProviders
 import com.lagradost.cloudstream3.MainAPI
-import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.utils.*
 import kotlin.collections.forEach
@@ -15,16 +15,13 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
     override var supportedTypes = TvType.values().toSet()
     override var lang = "en"
     override val hasMainPage = true
-
-    override suspend fun search(query: String): List<SearchResponse> {
-        return listOf<SearchResponse>()
-    }
+    override val hasQuickSearch = false
 
     val mapper = jacksonObjectMapper()
-
-    // override val mainPage = readAllHomes()
+    var sectionNamesList: List<String> = emptyList()
 
     fun loadSections(): List<MainPageData> {
+        sectionNamesList = emptyList()
         var data: List<MainPageData> = emptyList()
         var savedSections: List<SectionInfo> = emptyList()
         val savedPlugins = plugin.currentSections
@@ -35,11 +32,27 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
             if (section.enabled) {
                 data +=
                         mainPageOf(
-                                "${mapper.writeValueAsString(section)}" to "${section.pluginName}"
+                                "${mapper.writeValueAsString(section)}" to
+                                        "${buildSectionName(section)}"
                         )
             }
         }
-        if (data.size.equals(0)) return mainPageOf("" to "") else return data
+        if (data.size.equals(0)) return mainPageOf("" to "")
+        else if (plugin.extNameOnHome) return data else return data.sortedBy { it.name }
+    }
+
+    private fun buildSectionName(section: SectionInfo): String {
+        Log.d("Rushi", "Looking for ${section.pluginName!!} ${section.name!!}")
+        Log.d("Rushi", sectionNamesList.toString())
+        Log.d("Rushi", sectionNamesList.filter { it.contains(section.name!!) }.size.toString())
+        var name: String
+        if (plugin.extNameOnHome) name = section.pluginName + ": " + section.name!!
+        else if (sectionNamesList.contains(section.name!!))
+                name =
+                        "${section.name!!} ${sectionNamesList.filter { it.contains(section.name!!) }.size + 1}"
+        else name = section.name!!
+        sectionNamesList += name
+        return name
     }
 
     override val mainPage = loadSections()
@@ -48,13 +61,11 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
         if (!request.name.isNullOrEmpty()) {
             try {
                 val realSection: SectionInfo = AppUtils.parseJson<SectionInfo>(request.data)
-                val provider = allProviders.find { it.name == request.name }
+                val provider = allProviders.find { it.name == realSection.pluginName }
                 return provider?.getMainPage(
                         page,
                         MainPageRequest(
-                                if (plugin.extNameOnHome)
-                                        realSection.pluginName + ": " + realSection.name!!
-                                else realSection.name!!,
+                                request.name,
                                 realSection.url.toString(),
                                 request.horizontalImages
                         )
