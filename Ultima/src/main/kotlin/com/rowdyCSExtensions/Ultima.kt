@@ -52,7 +52,9 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
                 return provider?.getMainPage(
                         page,
                         MainPageRequest(
-                                realSection.pluginName + ": " + realSection.name.toString(),
+                                if (plugin.extNameOnHome)
+                                        realSection.pluginName + ": " + realSection.name!!
+                                else realSection.name!!,
                                 realSection.url.toString(),
                                 request.horizontalImages
                         )

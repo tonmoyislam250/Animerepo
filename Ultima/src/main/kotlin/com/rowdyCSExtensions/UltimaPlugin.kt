@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.APIHolder.allProviders
 import com.lagradost.cloudstream3.AcraApplication.Companion.getKey
 import com.lagradost.cloudstream3.AcraApplication.Companion.setKey
+import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.Plugin
+import com.lagradost.cloudstream3.plugins.PluginManager
 
 @CloudstreamPlugin
 class UltimaPlugin : Plugin() {
@@ -18,6 +20,12 @@ class UltimaPlugin : Plugin() {
         get() = getKey("ULTIMA_PROVIDER_LIST") ?: arrayOf(PluginInfo())
         set(value) {
             setKey("ULTIMA_PROVIDER_LIST", value)
+        }
+
+    var extNameOnHome: Boolean
+        get() = getKey("ULTIMA_EXT_NAME_ON_HOME") ?: true
+        set(value) {
+            setKey("ULTIMA_EXT_NAME_ON_HOME", value)
         }
 
     companion object {
@@ -41,6 +49,14 @@ class UltimaPlugin : Plugin() {
             val frag = UltimaFragment(this)
             frag.show(activity!!.supportFragmentManager, "")
         }
+    }
+
+    fun reload(context: Context?) {
+        val pluginData =
+                PluginManager.getPluginsOnline().find { it.internalName.contains("Ultima") }!!
+        PluginManager.unloadPlugin(pluginData.filePath)
+        PluginManager.loadAllOnlinePlugins(context!!)
+        afterPluginsLoadedEvent.invoke(true)
     }
 
     fun fetchSections(): Array<PluginInfo> {

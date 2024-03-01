@@ -12,14 +12,13 @@ import android.widget.CompoundButton
 import android.widget.CompoundButton.OnCheckedChangeListener
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
-import com.lagradost.cloudstream3.plugins.PluginManager
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -66,40 +65,46 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
             savedInstanceState: Bundle?
     ): View? {
 
-        // Inflate the layout for this fragment
+        // collecting required resources
         val settingsLayoutId =
                 plugin.resources!!.getIdentifier("settings", "layout", "com.KillerDogeEmpire")
         val settingsLayout = plugin.resources!!.getLayout(settingsLayoutId)
         val settings = inflater.inflate(settingsLayout, container, false)
-
-        val parentLayout = settings.findView<LinearLayout>("parent_list")
-        val parentLayoutId =
-                plugin.resources!!.getIdentifier("parent_layout", "layout", "com.KillerDogeEmpire")
-
         val outlineId =
                 plugin.resources!!.getIdentifier("outline", "drawable", "com.KillerDogeEmpire")
+
+        // building save button and its click listener
         val saveIconId =
                 plugin.resources!!.getIdentifier("save_icon", "drawable", "com.KillerDogeEmpire")
-
         val saveBtn = settings.findView<ImageView>("save")
         saveBtn.setImageDrawable(plugin.resources!!.getDrawable(saveIconId, null))
         saveBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         saveBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
-                        val pluginData =
-                                PluginManager.getPluginsOnline().find {
-                                    it.internalName.contains("Ultima")
-                                }!!
-                        PluginManager.unloadPlugin(pluginData.filePath)
-                        PluginManager.loadAllOnlinePlugins(context!!)
-                        afterPluginsLoadedEvent.invoke(true)
+                        plugin.reload(context)
                         Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
                         dismiss()
                     }
                 }
         )
 
+        // building toggle for extension_name_on_home and its click listener
+        val extNameOnHomeBtn = settings.findView<Switch>("ext_name_on_home_toggle")
+        extNameOnHomeBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        extNameOnHomeBtn.isChecked = plugin.extNameOnHome
+        extNameOnHomeBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        plugin.extNameOnHome = extNameOnHomeBtn.isChecked
+                    }
+                }
+        )
+
+        // building list of extensions and its sections with its click listener
+        val parentLayout = settings.findView<LinearLayout>("parent_list")
+        val parentLayoutId =
+                plugin.resources!!.getIdentifier("parent_layout", "layout", "com.KillerDogeEmpire")
         providers.forEach { provider ->
             val parentLayoutView =
                     buildExtensionView(provider, parentLayoutId, outlineId, inflater, container)
@@ -116,17 +121,18 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
             inflater: LayoutInflater,
             container: ViewGroup?
     ): View {
+
+        // collecting required resources
         val parentElementLayout = plugin.resources!!.getLayout(parentLayoutId)
         val parentLayoutView = inflater.inflate(parentElementLayout, container, false)
         val parentTextViewBtn = parentLayoutView.findView<TextView>("parent_textview")
-
-        parentTextViewBtn.text = "▶ " + provider.name
-        parentTextViewBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         val childList = parentLayoutView.findView<LinearLayout>("child_list")
-
         val childLayoutId =
                 plugin.resources!!.getIdentifier("child_checkbox", "layout", "com.KillerDogeEmpire")
 
+        // building extension textview and its click listener
+        parentTextViewBtn.text = "▶ " + provider.name
+        parentTextViewBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         parentTextViewBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
@@ -141,6 +147,7 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 }
         )
 
+        // building list of sections of current extnesion with its click listener
         provider.sections?.forEach { section ->
             val newSectionView =
                     buildSectionView(section, childLayoutId, outlineId, inflater, container)
@@ -156,26 +163,17 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
             inflater: LayoutInflater,
             container: ViewGroup?
     ): View {
+
+        // collecting required resources
         val ChildElementLayout = plugin.resources!!.getLayout(childLayoutId)
         val sectionView = inflater.inflate(ChildElementLayout, container, false)
         val childCheckBoxBtn = sectionView.findView<CheckBox>("child_checkbox")
+        val counterLayout = sectionView.findView<LinearLayout>("counter_layout")
 
+        // building section checkbox and its click listener
         childCheckBoxBtn.text = section.name
         childCheckBoxBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         childCheckBoxBtn.isChecked = section.enabled
-        childCheckBoxBtn.id = View.generateViewId()
-
-        val counterLayout = sectionView.findView<LinearLayout>("counter_layout")
-        counterLayout.visibility = if (section.enabled) View.VISIBLE else View.GONE
-        val decreasePriorityBtn = counterLayout.findView<TextView>("decrease")
-        val priorityTextview = counterLayout.findView<TextView>("priority_count")
-        val increasePriorityBtn = counterLayout.findView<TextView>("increase")
-
-        decreasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
-        increasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
-
-        priorityTextview.text = section.priority.toString()
-
         childCheckBoxBtn.setOnCheckedChangeListener(
                 object : OnCheckedChangeListener {
                     override fun onCheckedChanged(buttonView: CompoundButton, isChecked: Boolean) {
@@ -186,6 +184,29 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 }
         )
 
+        // configure priority counter next to the section
+        configureCounterView(section, counterLayout, outlineId)
+
+        return sectionView
+    }
+
+    fun configureCounterView(
+            section: UltimaPlugin.SectionInfo,
+            counterLayout: LinearLayout,
+            outlineId: Int
+    ) {
+
+        // collecting required resources
+        val decreasePriorityBtn = counterLayout.findView<TextView>("decrease")
+        val priorityTextview = counterLayout.findView<TextView>("priority_count")
+        val increasePriorityBtn = counterLayout.findView<TextView>("increase")
+
+        // counter visible only if section enabled
+        counterLayout.visibility = if (section.enabled) View.VISIBLE else View.GONE
+        priorityTextview.text = section.priority.toString()
+
+        // configuring click listener for decrease button
+        decreasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         decreasePriorityBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
@@ -199,6 +220,8 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                 }
         )
 
+        // configuring click listener for increase button
+        increasePriorityBtn.background = plugin.resources!!.getDrawable(outlineId, null)
         increasePriorityBtn.setOnClickListener(
                 object : OnClickListener {
                     override fun onClick(btn: View) {
@@ -211,8 +234,6 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                     }
                 }
         )
-
-        return sectionView
     }
 
     @RequiresApi(Build.VERSION_CODES.M)

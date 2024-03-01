@@ -29,7 +29,6 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -50,9 +49,42 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:text="set priority next to section (higher number to stay on top)" />
+
+        <ImageView
+            android:src="@android:drawable/divider_horizontal_dark"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp" />
+
+        <Switch
+            android:id="@+id/ext_name_on_home_toggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:padding="5dp"
+            android:text="Include extension name on home screen" />
+
+        <ImageView
+            android:src="@android:drawable/divider_horizontal_dark"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:text="Configure Sections" />
 
         <LinearLayout
             android:id="@+id/parent_list"
