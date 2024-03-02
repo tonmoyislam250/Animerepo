@@ -1,6 +1,5 @@
 package com.KillerDogeEmpire
 
-import android.util.Log
 import com.KillerDogeEmpire.UltimaPlugin.SectionInfo
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.lagradost.cloudstream3.*
@@ -37,14 +36,10 @@ class Ultima(val plugin: UltimaPlugin) : MainAPI() {
                         )
             }
         }
-        if (data.size.equals(0)) return mainPageOf("" to "")
-        else if (plugin.extNameOnHome) return data else return data.sortedBy { it.name }
+        if (data.size.equals(0)) return mainPageOf("" to "") else return data
     }
 
     private fun buildSectionName(section: SectionInfo): String {
-        Log.d("Rushi", "Looking for ${section.pluginName!!} ${section.name!!}")
-        Log.d("Rushi", sectionNamesList.toString())
-        Log.d("Rushi", sectionNamesList.filter { it.contains(section.name!!) }.size.toString())
         var name: String
         if (plugin.extNameOnHome) name = section.pluginName + ": " + section.name!!
         else if (sectionNamesList.contains(section.name!!))
