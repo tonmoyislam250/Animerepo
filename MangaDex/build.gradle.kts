@@ -5,7 +5,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
 }
 // use an integer for version numbers
-version = 1
+version = 3
 
 
 cloudstream {
