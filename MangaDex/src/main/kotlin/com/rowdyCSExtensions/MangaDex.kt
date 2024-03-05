@@ -1,5 +1,6 @@
 package com.RowdyAvocado
 
+// import android.util.Log
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.lagradost.cloudstream3.*
@@ -29,15 +30,31 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
     override val mainPage =
             mainPageOf(
                     "$apiUrl/manga?limit=$limit&offset=#&order[createdAt]=desc&includes[]=cover_art&hasAvailableChapters=true" to
-                            "Latest Updates"
+                            "Latest Updates",
+                    "$apiUrl/manga?limit=$limit&offset=#&order[followedCount]=desc&includes[]=cover_art&hasAvailableChapters=true" to
+                            "Popular Titles",
+                    "$apiUrl/list/805ba886-dd99-4aa4-b460-4bd7c7b71352" to "Staff Picks",
+                    "$apiUrl/list/1cc30d64-45c6-45a6-8c45-3771e1933b0f" to "Seasonal",
             )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
+        var url: String = request.data
+        if (url.contains("list")) {
+            val listResponse = app.get(request.data).parsedSafe<ListResponse>()!!
+            if (listResponse.result.equals("ok")) {
+                val mangaInList = listResponse.data.rel.joinToString("&ids[]=") { it.id }
+                url = "$apiUrl/manga?includes[]=cover_art&ids[]=" + mangaInList
+            } else return null
+        }
         val res =
-                app.get(request.data.replace("#", (page * limit).toString()))
-                        .parsedSafe<MultiMangaResponse>()
-        if (res?.result.equals("ok")) {
-            return newHomePageResponse(request.name, searchResponseBuilder(res!!.data), true)
+                app.get(url.replace("#", ((page - 1) * limit).toString()))
+                        .parsedSafe<MultiMangaResponse>()!!
+        if (res.result.equals("ok")) {
+            return newHomePageResponse(
+                    request.name,
+                    searchResponseBuilder(res.data),
+                    !request.data.contains("list")
+            )
         }
         throw ErrorLoadingException("Nothing to show here.")
     }
@@ -74,7 +91,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                     }
                 }
 
-        return newAnimeLoadResponse(manga.attrs.title.en!!, url, TvType.Anime) {
+        return newAnimeLoadResponse(manga.attrs.title.name, url, TvType.Anime) {
             addEpisodes(DubStatus.Dubbed, chapters)
             this.backgroundPosterUrl = posterUrl
             this.posterUrl = posterUrl
@@ -93,7 +110,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                         .parsedSafe<ChapterPagesResponse>()!!
         val imageUrlList =
                 if (plugin.dataSaver)
-                        chapterPages.chapter.dataSaver.sorted().mapNotNull {
+                        chapterPages.chapter.dataSaver.mapNotNull {
                             chapterPages.baseUrl +
                                     "/data-saver/" +
                                     chapterPages.chapter.hash +
@@ -101,7 +118,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                                     it
                         }
                 else
-                        chapterPages.chapter.data.sorted().mapNotNull {
+                        chapterPages.chapter.data.mapNotNull {
                             chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash + "/" + it
                         }
         plugin.openFragment(imageUrlList)
@@ -114,12 +131,23 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                     val mangaId = manga?.id
                     val poster = manga!!.rel.find { it.type.equals("cover_art") }?.attrs!!.fileName
                     val posterUrl = "$mainUrl/covers/$mangaId/$poster"
-                    newAnimeSearchResponse(manga.attrs.title.en!!, "manga/" + manga.id) {
+                    newAnimeSearchResponse(manga.attrs.title.name, "manga/" + manga.id) {
                         this.posterUrl = posterUrl
                     }
                 }
         return searchCollection
     }
+
+    // ======================== Manga API Response ==================================
+
+    data class ListResponse(
+            @JsonProperty("result") var result: String,
+            @JsonProperty("data") var data: ListData
+    )
+
+    data class ListData(@JsonProperty("relationships") var rel: List<MangaInList>)
+
+    data class MangaInList(@JsonProperty("id") var id: String)
 
     // ======================== Manga API Response ==================================
 
@@ -144,7 +172,12 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
             @JsonProperty("description") var desc: MangaDesc
     )
 
-    data class MangaTitle(@JsonProperty("en") var en: String? = null)
+    data class MangaTitle(
+            @JsonProperty("en") var en: String? = null,
+            @JsonProperty("ja") var ja: String? = null,
+            @JsonProperty("ja-ro") var jaRo: String? = null,
+            var name: String = en ?: ja ?: jaRo ?: ""
+    )
 
     data class MangaDesc(@JsonProperty("en") var en: String? = null)
 

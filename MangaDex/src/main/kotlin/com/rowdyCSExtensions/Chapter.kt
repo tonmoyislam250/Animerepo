@@ -1,15 +1,14 @@
 package com.RowdyAvocado
 
+// import android.util.Log
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
@@ -62,9 +61,9 @@ class MangaDexFragment(val plugin: MangaDexPlugin, val imageUrlList: List<String
         val chapterView = inflater.inflate(chapterLayout, container, false)
         val pageLayoutId = plugin.resources!!.getIdentifier("page", "layout", "com.RowdyAvocado")
 
-        val chapterTitleTextView = chapterView.findView<TextView>("title")
+        // val chapterTitleTextView = chapterView.findView<TextView>("title")
+        // chapterTitleTextView.text = chapterName
         val pageListLayout = chapterView.findView<LinearLayout>("page_list")
-        // chapterTitleTextView.text = imageUrlList.toString()
         imageUrlList.forEach { url ->
             val pageLayout = plugin.resources!!.getLayout(pageLayoutId)
             val pageLayoutView = inflater.inflate(pageLayout, container, false)
@@ -76,7 +75,6 @@ class MangaDexFragment(val plugin: MangaDexPlugin, val imageUrlList: List<String
                     .into(pageImageView)
             pageListLayout.addView(pageLayoutView)
         }
-        Log.d("Rushi", imageUrlList.toString())
         return chapterView
     }
 
