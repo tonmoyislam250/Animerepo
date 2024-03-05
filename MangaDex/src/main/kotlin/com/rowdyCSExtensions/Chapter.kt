@@ -19,7 +19,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-class MangaFragment(val plugin: MangaDexPlugin, val imageUrlList: List<String>) :
+class MangaDexFragment(val plugin: MangaDexPlugin, val imageUrlList: List<String>) :
         BottomSheetDialogFragment() {
 
     private var param1: String? = null

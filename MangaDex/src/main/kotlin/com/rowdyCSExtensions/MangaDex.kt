@@ -92,9 +92,18 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                 app.get("$apiUrl/at-home/server/$data?forcePort443=false")
                         .parsedSafe<ChapterPagesResponse>()!!
         val imageUrlList =
-                chapterPages.chapter.data.sorted().mapNotNull {
-                    chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash + "/" + it
-                }
+                if (plugin.dataSaver)
+                        chapterPages.chapter.dataSaver.sorted().mapNotNull {
+                            chapterPages.baseUrl +
+                                    "/data-saver/" +
+                                    chapterPages.chapter.hash +
+                                    "/" +
+                                    it
+                        }
+                else
+                        chapterPages.chapter.data.sorted().mapNotNull {
+                            chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash + "/" + it
+                        }
         plugin.openFragment(imageUrlList)
         return false
     }
