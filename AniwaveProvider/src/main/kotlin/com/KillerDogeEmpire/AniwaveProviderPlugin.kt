@@ -9,7 +9,8 @@ import com.KillerDogeEmpire.BottomFragment
 import com.lagradost.cloudstream3.AcraApplication.Companion.getActivity
 import com.lagradost.cloudstream3.AcraApplication.Companion.getKey
 import com.lagradost.cloudstream3.AcraApplication.Companion.setKey
-import android.util.Log
+import com.lagradost.cloudstream3.MainActivity.Companion.afterPluginsLoadedEvent
+import com.lagradost.cloudstream3.plugins.PluginManager
 
 enum class ServerList(val link: String) {
     TO("https://aniwave.to"),
@@ -28,6 +29,17 @@ class AniwaveProviderPlugin : Plugin() {
                 ?: return@openSettings
                
             BottomFragment(this).show(manager, "Test")
+        }
+    }
+
+    fun reload(context: Context?) {
+        val pluginData = PluginManager.getPluginsOnline().find { it.internalName.contains("Aniwave/9Anime") }
+        if(pluginData == null) {
+            PluginManager.hotReloadAllLocalPlugins(context as AppCompatActivity)
+        } else {
+            PluginManager.unloadPlugin(pluginData.filePath)
+            PluginManager.loadAllOnlinePlugins(context!!)
+            afterPluginsLoadedEvent.invoke(true)
         }
     }
 

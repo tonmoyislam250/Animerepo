@@ -7,27 +7,64 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
+import android.widget.Switch
 import android.widget.Toast
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.lagradost.cloudstream3.CommonActivity.showToast
-import com.lagradost.cloudstream3.plugins.Plugin
 
-class BottomFragment(private val plugin: Plugin) : BottomSheetDialogFragment() {
+class BottomFragment(private val plugin: AniwaveProviderPlugin) : BottomSheetDialogFragment() {
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+            inflater: LayoutInflater,
+            container: ViewGroup?,
+            savedInstanceState: Bundle?
     ): View? {
-        val id = plugin.resources!!.getIdentifier("bottom_sheet_layout", "layout", "com.KillerDogeEmpire")
+        val id =
+                plugin.resources!!.getIdentifier(
+                        "bottom_sheet_layout",
+                        "layout",
+                        "com.KillerDogeEmpire"
+                )
         val layout = plugin.resources!!.getLayout(id)
         val view = inflater.inflate(layout, container, false)
-        val serverGroup = view.findView<RadioGroup>("server_group")
-        val radioBtnId = plugin.resources!!.getIdentifier("radio_button", "layout", "com.KillerDogeEmpire")
+        val outlineId =
+                plugin.resources!!.getIdentifier("outline", "drawable", "com.KillerDogeEmpire")
 
+        // building save button and settings click listener
+        val saveIconId =
+                plugin.resources!!.getIdentifier("save_icon", "drawable", "com.KillerDogeEmpire")
+        val saveBtn = view.findView<ImageView>("save")
+        saveBtn.setImageDrawable(plugin.resources!!.getDrawable(saveIconId, null))
+        saveBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        saveBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        plugin.reload(context)
+                        Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
+                }
+        )
+
+        // building simkl sync switch and settings click listener
+        val simklSyncSwitch = view.findView<Switch>("simkl_sync")
+        simklSyncSwitch.isChecked = AniwaveProviderPlugin.aniwaveSimklSync
+        simklSyncSwitch.background = plugin.resources!!.getDrawable(outlineId, null)
+        simklSyncSwitch.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View?) {
+                        AniwaveProviderPlugin.aniwaveSimklSync = simklSyncSwitch.isChecked
+                    }
+                }
+        )
+
+        // building server options and settings click listener
+        val serverGroup = view.findView<RadioGroup>("server_group")
+        val radioBtnId =
+                plugin.resources!!.getIdentifier("radio_button", "layout", "com.KillerDogeEmpire")
         ServerList.values().forEach { server ->
             val radioBtnLayout = plugin.resources!!.getLayout(radioBtnId)
             val radioBtnView = inflater.inflate(radioBtnLayout, container, false)
@@ -35,19 +72,18 @@ class BottomFragment(private val plugin: Plugin) : BottomSheetDialogFragment() {
             radioBtn.text = server.link
             val newId = View.generateViewId()
             radioBtn.id = newId
-            radioBtn.setOnClickListener(object : OnClickListener {
-                override fun onClick(btn: View?) {
-                    AniwaveProviderPlugin.currentAniwaveServer = radioBtn.text.toString()
-                    serverGroup.check(newId)
-                    Toast.makeText(
-                            context,
-                            "Restart the app",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                }
-            })
+            radioBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+            radioBtn.setOnClickListener(
+                    object : OnClickListener {
+                        override fun onClick(btn: View?) {
+                            AniwaveProviderPlugin.currentAniwaveServer = radioBtn.text.toString()
+                            serverGroup.check(newId)
+                        }
+                    }
+            )
             serverGroup.addView(radioBtnView)
-            if(AniwaveProviderPlugin.currentAniwaveServer.equals(server.link)) serverGroup.check(newId)
+            if (AniwaveProviderPlugin.currentAniwaveServer.equals(server.link))
+                    serverGroup.check(newId)
         }
         return view
     }
@@ -56,7 +92,7 @@ class BottomFragment(private val plugin: Plugin) : BottomSheetDialogFragment() {
         val id = plugin.resources!!.getIdentifier(name, "id", BuildConfig.LIBRARY_PACKAGE_NAME)
         return this.findViewById(id)
     }
-    
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState)
         (dialog as? BottomSheetDialog)?.behavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -66,41 +102,5 @@ class BottomFragment(private val plugin: Plugin) : BottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
-        val simklSyncBtnGroup = view.findView<RadioGroup>("simkl_sync_group")
-        val simklSyncYesBtn = view.findView<RadioButton>("simkl_sync_yes")
-        val simklSyncNoBtn = view.findView<RadioButton>("simkl_sync_no")
-
-        simklSyncYesBtn.setOnClickListener(object : OnClickListener {
-            override fun onClick(btn: View?) {
-                AniwaveProviderPlugin.aniwaveSimklSync = true
-                simklSyncBtnGroup.check(simklSyncYesBtn.id)
-                Toast.makeText(
-                        context,
-                        "Restart the app",
-                        Toast.LENGTH_SHORT
-                    ).show()
-            }
-        })
-
-        simklSyncNoBtn.setOnClickListener(object : OnClickListener {
-            override fun onClick(btn: View?) {
-                AniwaveProviderPlugin.aniwaveSimklSync = false
-                simklSyncBtnGroup.check(simklSyncNoBtn.id)
-                Toast.makeText(
-                        context,
-                        "Restart the app",
-                        Toast.LENGTH_SHORT
-                    ).show()
-            }
-        })
-
-        if(AniwaveProviderPlugin.aniwaveSimklSync) {
-            simklSyncBtnGroup.check(simklSyncYesBtn.id)
-        } else {
-            simklSyncBtnGroup.check(simklSyncNoBtn.id)
-        }
     }
-
-    
 }

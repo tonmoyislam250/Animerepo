@@ -14,16 +14,66 @@
         android:paddingBottom="20dp"
         tools:background="@color/cardview_dark_background">
 
-        <TextView
-            android:id="@+id/text1"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_rowWeight="1"
-            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp">
+
+            <TextView
+                android:id="@+id/text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_rowWeight="1"
+                android:text="Aniwave Settings"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="right">
+
+                <ImageView
+                    android:id="@+id/save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="#FFF"
+                    android:padding="5dp"
+                    android:text="test" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <ImageView
+            android:src="@android:drawable/divider_horizontal_dark"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
             android:layout_marginBottom="10dp"
-            android:text="Aniwave Settings (restart required)"
-            android:textSize="20sp"
+            android:layout_marginTop="10dp" />
+
+        <Switch
+            android:id="@+id/simkl_sync"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="17sp"
+            android:padding="5dp"
+            android:text="Simkl Sync"
             android:textStyle="bold" />
+
+        <ImageView
+            android:src="@android:drawable/divider_horizontal_dark"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="fitXY"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -43,41 +93,6 @@
                 android:id="@+id/server_group"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-            </RadioGroup>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="10dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingBottom="10dp"
-                android:text="Simkl Sync"
-                android:textSize="17sp"
-                android:textStyle="bold" />
-
-            <RadioGroup
-                android:id="@+id/simkl_sync_group"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                
-                <RadioButton
-                    android:id="@+id/simkl_sync_yes"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="Yes" />
-                
-                <RadioButton
-                    android:id="@+id/simkl_sync_no"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="No" />
 
             </RadioGroup>
 
