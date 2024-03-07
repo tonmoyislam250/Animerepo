@@ -46,14 +46,23 @@ class MangaDexPlugin : Plugin() {
 
     fun reload(context: Context?) {
         val pluginData =
-                PluginManager.getPluginsOnline().find { it.internalName.contains("MangaDex") }!!
-        PluginManager.unloadPlugin(pluginData.filePath)
-        PluginManager.loadAllOnlinePlugins(context!!)
-        afterPluginsLoadedEvent.invoke(true)
+                PluginManager.getPluginsOnline().find { it.internalName.contains("MangaDex") }
+        if (pluginData == null) {
+            PluginManager.hotReloadAllLocalPlugins(context as AppCompatActivity)
+        } else {
+            PluginManager.unloadPlugin(pluginData.filePath)
+            PluginManager.loadAllOnlinePlugins(context!!)
+            afterPluginsLoadedEvent.invoke(true)
+        }
     }
 
-    fun openFragment(imageUrlList: List<String>) {
-        val frag = MangaDexFragment(this, imageUrlList)
+    fun loadChapterProviders(chapterGroup: MutableList<ChapterData>) {
+        val frag = MangaDexChapterProvidersFragment(this, chapterGroup)
+        frag.show(activity!!.supportFragmentManager, "")
+    }
+
+    suspend fun loadChapter(chapterName: String, chapterPages: ChapterPagesResponse) {
+        val frag = MangaDexChapterFragment(this, chapterName, chapterPages)
         frag.show(activity!!.supportFragmentManager, "")
     }
 }

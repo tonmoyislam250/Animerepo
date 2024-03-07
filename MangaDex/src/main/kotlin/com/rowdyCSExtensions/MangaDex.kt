@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.utils.*
+import kotlin.text.replace
 
 class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
     override var name = "MangaDex"
@@ -67,27 +68,42 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
         val mangaId = manga.id
         val poster = manga.rel.find { it.type.equals("cover_art") }?.attrs!!.fileName
         val posterUrl = "$mainUrl/covers/$mangaId/$poster"
-        var chaptersList = emptyList<ChapterData?>()
+        var chaptersResponse = emptyList<ChapterData?>()
+        var chapterGroup = mutableMapOf<String, MutableList<ChapterData>>()
         var counter = 0
         val limit = 500
 
         while (counter >= 0) {
             val res =
                     app.get(
-                                    "$apiUrl/manga/$mangaId/feed?includes[]=scanlation_group&order[volume]=asc&order[chapter]=asc&limit=$limit&offset=${counter*limit}&translatedLanguage[]=en"
+                                    "$apiUrl/manga/$mangaId/feed?includes[]=scanlation_group&order[volume]=asc&order[chapter]=asc&limit=$limit&offset=${counter*limit}"
                             )
                             .parsedSafe<ChaptersListResponse>()!!
-            chaptersList += res.data
+            chaptersResponse += res.data
             if ((res.limit + res.offset) < res.total) counter += 1 else counter = -1
         }
 
+        chaptersResponse.forEach { chRes ->
+            val chNum = chRes?.attrs?.chapter!!
+            if (chNum in chapterGroup) {
+                chapterGroup[chNum]!!.add(chRes)
+            } else chapterGroup.put(chNum, mutableListOf(chRes))
+        }
+
         val chapters =
-                chaptersList.mapNotNull { chapter ->
-                    newEpisode(chapter!!.id) {
-                        this.name = chapter.attrs.title
-                        this.episode = chapter.attrs.chapter?.toFloat()?.toInt()
-                        this.season = chapter.attrs.volume?.toFloat()?.toInt()
-                        this.data = chapter.id
+                chapterGroup.toSortedMap().mapNotNull { chapter ->
+                    newEpisode(chapter.key) {
+                        this.name =
+                                chapter.value
+                                        .filter { it.attrs.translatedLanguage.equals("en") }
+                                        .mapNotNull { it.attrs.title }
+                                        .filter { it.trim().isNotEmpty() }
+                                        .toSet()
+                                        .joinToString(" | ")
+                                        .ifEmpty { "Chapter " + chapter.key }
+                        this.episode = chapter.key.toFloat().toInt()
+                        this.season = chapter.value.first().attrs.volume?.toFloat()?.toInt()
+                        this.data = mapper.writeValueAsString(chapter.value)
                     }
                 }
 
@@ -105,23 +121,30 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val chapterPages =
-                app.get("$apiUrl/at-home/server/$data?forcePort443=false")
-                        .parsedSafe<ChapterPagesResponse>()!!
-        val imageUrlList =
-                if (plugin.dataSaver)
-                        chapterPages.chapter.dataSaver.mapNotNull {
-                            chapterPages.baseUrl +
-                                    "/data-saver/" +
-                                    chapterPages.chapter.hash +
-                                    "/" +
-                                    it
-                        }
-                else
-                        chapterPages.chapter.data.mapNotNull {
-                            chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash + "/" + it
-                        }
-        plugin.openFragment(imageUrlList)
+        // val chapterPages =
+        //         app.get("$apiUrl/at-home/server/$data?forcePort443=false")
+        //                 .parsedSafe<ChapterPagesResponse>()!!
+        // val imageUrlList =
+        //         if (plugin.dataSaver)
+        //                 chapterPages.chapter.dataSaver.mapNotNull {
+        //                     chapterPages.baseUrl +
+        //                             "/data-saver/" +
+        //                             chapterPages.chapter.hash +
+        //                             "/" +
+        //                             it
+        //                 }
+        //         else
+        //                 chapterPages.chapter.data.mapNotNull {
+        //                     chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash +
+        // "/" +
+        // it
+        //                 }
+        // plugin.loadChapter(imageUrlList)
+
+        // -----------------------------------------------
+
+        val chapterGroup = AppUtils.parseJson<MutableList<ChapterData>>(data)
+        plugin.loadChapterProviders(chapterGroup)
         return false
     }
 
@@ -137,90 +160,104 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                 }
         return searchCollection
     }
-
-    // ======================== Manga API Response ==================================
-
-    data class ListResponse(
-            @JsonProperty("result") var result: String,
-            @JsonProperty("data") var data: ListData
-    )
-
-    data class ListData(@JsonProperty("relationships") var rel: List<MangaInList>)
-
-    data class MangaInList(@JsonProperty("id") var id: String)
-
-    // ======================== Manga API Response ==================================
-
-    data class MultiMangaResponse(
-            @JsonProperty("result") var result: String,
-            @JsonProperty("data") var data: List<MangaData?>
-    )
-
-    data class SingleMangaResponse(
-            @JsonProperty("result") var result: String,
-            @JsonProperty("data") var data: MangaData?
-    )
-
-    data class MangaData(
-            @JsonProperty("id") var id: String,
-            @JsonProperty("attributes") var attrs: MangaAttributes,
-            @JsonProperty("relationships") var rel: List<MangaRelationships>,
-    )
-
-    data class MangaAttributes(
-            @JsonProperty("title") var title: MangaTitle,
-            @JsonProperty("description") var desc: MangaDesc
-    )
-
-    data class MangaTitle(
-            @JsonProperty("en") var en: String? = null,
-            @JsonProperty("ja") var ja: String? = null,
-            @JsonProperty("ja-ro") var jaRo: String? = null,
-            var name: String = en ?: ja ?: jaRo ?: ""
-    )
-
-    data class MangaDesc(@JsonProperty("en") var en: String? = null)
-
-    data class MangaRelationships(
-            @JsonProperty("id") var id: String,
-            @JsonProperty("type") var type: String,
-            @JsonProperty("attributes") var attrs: MangaRelationshipsAttributes? = null,
-    )
-
-    data class MangaRelationshipsAttributes(
-            @JsonProperty("fileName") var fileName: String? = null,
-    )
-
-    // ====================== Chapter API Response ==============================
-
-    data class ChaptersListResponse(
-            @JsonProperty("result") var result: String,
-            @JsonProperty("data") var data: List<ChapterData?>,
-            @JsonProperty("limit") var limit: Int,
-            @JsonProperty("offset") var offset: Int,
-            @JsonProperty("total") var total: Int,
-    )
-
-    data class ChapterData(
-            @JsonProperty("id") var id: String,
-            @JsonProperty("attributes") var attrs: ChapterAttributes,
-    )
-
-    data class ChapterAttributes(
-            @JsonProperty("title") var title: String? = null,
-            @JsonProperty("volume") var volume: String? = null,
-            @JsonProperty("chapter") var chapter: String? = null,
-    )
-
-    data class ChapterPagesResponse(
-            @JsonProperty("result") var result: String,
-            @JsonProperty("baseUrl") var baseUrl: String,
-            @JsonProperty("chapter") var chapter: ChapterImages,
-    )
-
-    data class ChapterImages(
-            @JsonProperty("hash") var hash: String,
-            @JsonProperty("data") var data: List<String>,
-            @JsonProperty("dataSaver") var dataSaver: List<String>,
-    )
 }
+
+// ======================== Manga API Response ==================================
+
+data class ListResponse(
+        @JsonProperty("result") var result: String,
+        @JsonProperty("data") var data: ListData
+)
+
+data class ListData(@JsonProperty("relationships") var rel: List<MangaInList>)
+
+data class MangaInList(@JsonProperty("id") var id: String)
+
+// ======================== Manga API Response ==================================
+
+data class MultiMangaResponse(
+        @JsonProperty("result") var result: String,
+        @JsonProperty("data") var data: List<MangaData?>
+)
+
+data class SingleMangaResponse(
+        @JsonProperty("result") var result: String,
+        @JsonProperty("data") var data: MangaData?
+)
+
+data class MangaData(
+        @JsonProperty("id") var id: String,
+        @JsonProperty("attributes") var attrs: MangaAttributes,
+        @JsonProperty("relationships") var rel: List<MangaRelationships>,
+)
+
+data class MangaAttributes(
+        @JsonProperty("title") var title: MangaTitle,
+        @JsonProperty("description") var desc: MangaDesc
+)
+
+data class MangaTitle(
+        @JsonProperty("en") var en: String? = null,
+        @JsonProperty("ja") var ja: String? = null,
+        @JsonProperty("ja-ro") var jaRo: String? = null,
+        var name: String = en ?: ja ?: jaRo ?: ""
+)
+
+data class MangaDesc(@JsonProperty("en") var en: String? = null)
+
+data class MangaRelationships(
+        @JsonProperty("id") var id: String,
+        @JsonProperty("type") var type: String,
+        @JsonProperty("attributes") var attrs: MangaRelationshipsAttributes? = null,
+)
+
+data class MangaRelationshipsAttributes(
+        @JsonProperty("fileName") var fileName: String? = null,
+)
+
+// ====================== Chapter API Response ==============================
+
+data class ChaptersListResponse(
+        @JsonProperty("result") var result: String,
+        @JsonProperty("data") var data: List<ChapterData?>,
+        @JsonProperty("limit") var limit: Int,
+        @JsonProperty("offset") var offset: Int,
+        @JsonProperty("total") var total: Int,
+)
+
+data class ChapterData(
+        @JsonProperty("id") var id: String,
+        @JsonProperty("attributes") var attrs: ChapterAttributes,
+        @JsonProperty("relationships") var rel: List<ChapterRelationships>,
+)
+
+data class ChapterAttributes(
+        @JsonProperty("title") var title: String? = null,
+        @JsonProperty("pages") var pages: Int? = null,
+        @JsonProperty("volume") var volume: String? = null,
+        @JsonProperty("chapter") var chapter: String? = null,
+        @JsonProperty("externalUrl") var externalUrl: String? = null,
+        @JsonProperty("translatedLanguage") var translatedLanguage: String? = null,
+)
+
+data class ChapterRelationships(
+        @JsonProperty("id") var id: String,
+        @JsonProperty("type") var type: String,
+        @JsonProperty("attributes") var attrs: ChapterScanlationGroupAttributes? = null,
+)
+
+data class ChapterScanlationGroupAttributes(
+        @JsonProperty("name") var name: String? = null,
+)
+
+data class ChapterPagesResponse(
+        @JsonProperty("result") var result: String,
+        @JsonProperty("baseUrl") var baseUrl: String,
+        @JsonProperty("chapter") var chapter: ChapterImages,
+)
+
+data class ChapterImages(
+        @JsonProperty("hash") var hash: String,
+        @JsonProperty("data") var data: List<String>,
+        @JsonProperty("dataSaver") var dataSaver: List<String>,
+)

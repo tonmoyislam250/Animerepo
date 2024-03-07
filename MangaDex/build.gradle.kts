@@ -3,9 +3,10 @@ dependencies {
     implementation("com.google.android.material:material:1.4.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 }
 // use an integer for version numbers
-version = 3
+version = 4
 
 
 cloudstream {
