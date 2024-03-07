@@ -4,7 +4,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.2.1")
 }
 // use an integer for version numbers
-version = 13
+version = 14
 
 
 cloudstream {
@@ -34,5 +34,11 @@ cloudstream {
 android {
     buildFeatures {
         viewBinding = true
+    }
+
+    defaultConfig {
+        minSdk = 26
+        compileSdkVersion(33)
+        targetSdk = 33
     }
 }

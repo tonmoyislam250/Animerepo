@@ -17,7 +17,7 @@ class UltimaPlugin : Plugin() {
     var activity: AppCompatActivity? = null
 
     var currentSections: Array<PluginInfo>
-        get() = getKey("ULTIMA_PROVIDER_LIST") ?: arrayOf(PluginInfo())
+        get() = getKey("ULTIMA_PROVIDER_LIST") ?: emptyArray<PluginInfo>()
         set(value) {
             setKey("ULTIMA_PROVIDER_LIST", value)
         }
@@ -46,17 +46,21 @@ class UltimaPlugin : Plugin() {
         registerMainAPI(Ultima(this))
 
         openSettings = {
-            val frag = UltimaFragment(this)
+            val frag = UltimaSettings(this)
             frag.show(activity!!.supportFragmentManager, "")
         }
     }
 
     fun reload(context: Context?) {
         val pluginData =
-                PluginManager.getPluginsOnline().find { it.internalName.contains("Ultima") }!!
-        PluginManager.unloadPlugin(pluginData.filePath)
-        PluginManager.loadAllOnlinePlugins(context!!)
-        afterPluginsLoadedEvent.invoke(true)
+                PluginManager.getPluginsOnline().find { it.internalName.contains("Ultima") }
+        if (pluginData == null) {
+            PluginManager.hotReloadAllLocalPlugins(context as AppCompatActivity)
+        } else {
+            PluginManager.unloadPlugin(pluginData.filePath)
+            PluginManager.loadAllOnlinePlugins(context!!)
+            afterPluginsLoadedEvent.invoke(true)
+        }
     }
 
     fun fetchSections(): Array<PluginInfo> {

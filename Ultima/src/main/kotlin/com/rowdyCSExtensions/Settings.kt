@@ -1,5 +1,6 @@
 package com.KillerDogeEmpire
 
+import android.content.DialogInterface
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
@@ -16,21 +17,15 @@ import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.lagradost.cloudstream3.utils.AppUtils.setDefaultFocus
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass. Use the [BlankFragment.newInstance] factory method to create an
- * instance of this fragment.
- */
-class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
-    // TODO: Rename and change types of parameters
+class UltimaSettings(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
     private var param1: String? = null
     private var param2: String? = null
     private val providers = plugin.fetchSections()
@@ -110,6 +105,41 @@ class UltimaFragment(val plugin: UltimaPlugin) : BottomSheetDialogFragment() {
                     buildExtensionView(provider, parentLayoutId, outlineId, inflater, container)
             parentLayout.addView(parentLayoutView)
         }
+
+        // building alert for reset with its click listener
+        val builder = AlertDialog.Builder(context!!)
+        val dialogClickListener =
+                DialogInterface.OnClickListener { _, which ->
+                    when (which) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            plugin.currentSections = emptyArray()
+                            plugin.reload(context)
+                            Toast.makeText(context, "Sections cleared", Toast.LENGTH_SHORT).show()
+                            dismiss()
+                        }
+                        DialogInterface.BUTTON_NEGATIVE -> {}
+                    }
+                }
+
+        // building reset button with its click listener
+
+        val deleteIconId =
+                plugin.resources!!.getIdentifier("delete_icon", "drawable", "com.KillerDogeEmpire")
+        val deleteBtn = settings.findView<ImageView>("delete")
+        deleteBtn.setImageDrawable(plugin.resources!!.getDrawable(deleteIconId, null))
+        deleteBtn.background = plugin.resources!!.getDrawable(outlineId, null)
+        deleteBtn.setOnClickListener(
+                object : OnClickListener {
+                    override fun onClick(btn: View) {
+                        builder.setTitle("Reset Ultima")
+                                .setMessage("This will delete all selected sections.")
+                                .setPositiveButton("Reset", dialogClickListener)
+                                .setNegativeButton("Cancel", dialogClickListener)
+                                .show()
+                                .setDefaultFocus()
+                    }
+                }
+        )
 
         return settings
     }
