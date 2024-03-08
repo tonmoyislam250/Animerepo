@@ -91,9 +91,9 @@ class MangaDexChapterProvidersFragment(
                     SubtitleHelper.getFlagFromIso(chapter.attrs.translatedLanguage) +
                             " " +
                             if (chapter.attrs.title.isNullOrBlank())
-                                    "Chapter " + chapter.attrs.chapter
+                                    "Chapter " + (chapter.attrs.chapter ?: "0")
                             else chapter.attrs.title
-            pageCountView.text = "Pages: " + chapter.attrs.pages
+            pageCountView.text = "Pages: " + (chapter.attrs.pages ?: "0")
             providerNameView.text =
                     "Provider: " +
                             chapter.rel.find { it.type.contains("scanlation_group") }?.attrs?.name

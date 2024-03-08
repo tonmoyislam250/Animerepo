@@ -84,7 +84,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
         }
 
         chaptersResponse.forEach { chRes ->
-            val chNum = chRes?.attrs?.chapter!!
+            val chNum = chRes!!.attrs.chapter ?: "0"
             if (chNum in chapterGroup) {
                 chapterGroup[chNum]!!.add(chRes)
             } else chapterGroup.put(chNum, mutableListOf(chRes))
@@ -121,28 +121,6 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
-        // val chapterPages =
-        //         app.get("$apiUrl/at-home/server/$data?forcePort443=false")
-        //                 .parsedSafe<ChapterPagesResponse>()!!
-        // val imageUrlList =
-        //         if (plugin.dataSaver)
-        //                 chapterPages.chapter.dataSaver.mapNotNull {
-        //                     chapterPages.baseUrl +
-        //                             "/data-saver/" +
-        //                             chapterPages.chapter.hash +
-        //                             "/" +
-        //                             it
-        //                 }
-        //         else
-        //                 chapterPages.chapter.data.mapNotNull {
-        //                     chapterPages.baseUrl + "/data/" + chapterPages.chapter.hash +
-        // "/" +
-        // it
-        //                 }
-        // plugin.loadChapter(imageUrlList)
-
-        // -----------------------------------------------
-
         val chapterGroup = AppUtils.parseJson<MutableList<ChapterData>>(data)
         plugin.loadChapterProviders(chapterGroup)
         return false

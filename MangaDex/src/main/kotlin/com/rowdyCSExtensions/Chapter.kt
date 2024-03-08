@@ -15,6 +15,7 @@ import androidx.core.content.res.ResourcesCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 private const val ARG_PARAM1 = "param1"
@@ -92,8 +93,8 @@ class MangaDexChapterFragment(
             Glide.with(this)
                     .load(url)
                     .transition(DrawableTransitionOptions.withCrossFade())
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .override(Target.SIZE_ORIGINAL)
                     .into(pageImageView)
             pageListLayout.addView(pageLayoutView)
         }
