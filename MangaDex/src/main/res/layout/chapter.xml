@@ -25,7 +25,7 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/page_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
             android:paddingStart="2dp"
             android:paddingEnd="2dp">
 
-        </LinearLayout>
+        </androidx.recyclerview.widget.RecyclerView>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

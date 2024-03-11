@@ -8,10 +8,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -67,11 +69,12 @@ class MangaDexChapterFragment(
         val chapterView = inflater.inflate(chapterLayout, container, false)
         val pageLayoutId = plugin.resources!!.getIdentifier("page", "layout", "com.RowdyAvocado")
         // val loadingImg =
-        //         plugin.resources!!.getIdentifier("save_icon", "drawable", "com.RowdyAvocado")
+        //         plugin.resources!!.getIdentifier("save_icon", "drawable",
+        // "com.RowdyAvocado")
 
         val chapterTitleTextView = chapterView.findView<TextView>("title")
         chapterTitleTextView.text = chapterName
-        val pageListLayout = chapterView.findView<LinearLayout>("page_list")
+        // val pageListLayout = chapterView.findView<LinearLayout>("page_list")
         val prefix = "${chapterPages.baseUrl}/#/${chapterPages.chapter.hash}/"
         val images: Pair<String, List<String>> =
                 if (plugin.dataSaver)
@@ -85,22 +88,51 @@ class MangaDexChapterFragment(
                                 chapterPages.chapter.data,
                         )
 
-        images.second.forEach { image ->
-            val url = prefix.replace("#", images.first) + image
-            val pageLayout = plugin.resources!!.getLayout(pageLayoutId)
-            val pageLayoutView = inflater.inflate(pageLayout, container, false)
-            val pageImageView = pageLayoutView.findView<ImageView>("page")
-            Glide.with(this)
-                    .load(url)
-                    .transition(DrawableTransitionOptions.withCrossFade())
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .override(Target.SIZE_ORIGINAL)
-                    .into(pageImageView)
-            pageListLayout.addView(pageLayoutView)
-        }
+        val imageUrls =
+                images.second.mapNotNull { image -> prefix.replace("#", images.first) + image }
+        val customAdapter = CustomAdapter(plugin, imageUrls)
+        val recyclerView: RecyclerView = chapterView.findView<RecyclerView>("page_list")
+        recyclerView.setLayoutManager(LinearLayoutManager(context))
+        recyclerView.adapter = customAdapter
+
         return chapterView
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {}
+}
+
+class CustomAdapter(val plugin: MangaDexPlugin, private val imageUrls: List<String>) :
+        RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
+
+    class ViewHolder(val plugin: MangaDexPlugin, val view: View) : RecyclerView.ViewHolder(view) {
+        val imageView: ImageView
+
+        init {
+            imageView = view.findView<ImageView>("page")
+        }
+
+        private fun <T : View> View.findView(name: String): T {
+            val id = plugin.resources!!.getIdentifier(name, "id", BuildConfig.LIBRARY_PACKAGE_NAME)
+            return this.findViewById(id)
+        }
+    }
+
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
+        val pageLayoutId = plugin.resources!!.getIdentifier("page", "layout", "com.RowdyAvocado")
+        val pageLayout = plugin.resources!!.getLayout(pageLayoutId)
+        val view = LayoutInflater.from(viewGroup.context).inflate(pageLayout, viewGroup, false)
+        return ViewHolder(plugin, view)
+    }
+
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
+        Glide.with(plugin.activity as FragmentActivity)
+                .load(imageUrls[position])
+                .transition(DrawableTransitionOptions.withCrossFade())
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .override(Target.SIZE_ORIGINAL)
+                .into(viewHolder.imageView)
+    }
+
+    override fun getItemCount() = imageUrls.size
 }
