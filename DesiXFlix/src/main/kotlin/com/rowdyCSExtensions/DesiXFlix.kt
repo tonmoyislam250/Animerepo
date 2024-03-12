@@ -1,5 +1,6 @@
 package com.rowdyCSExtensions
 
+import android.util.Log
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.SearchResponse
@@ -31,11 +32,11 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
     override val mainPage =
             mainPageOf(
                     "$mainUrl/page/" to "Latest videos",
-                    "$mainUrl/category/hot-web-series/page/" to "Hot Web Series",
-                    "$mainUrl/category/short-film/page/" to "Short Film",
-                    "$mainUrl/category/altbalaji/page/" to "ALTBalaji",
-                    "$mainUrl/category/ullu-app/page/" to "Ullu App",
-                    "$mainUrl/category/hot-live/page/" to "Hot Live",
+                    "$mainUrl/hot-web-series/page/" to "Hot Web Series",
+                    "$mainUrl/hot-short-film/page/" to "Hot Short Film",
+                    "$mainUrl/alt-balaji/page/" to "ALTBalaji",
+                    "$mainUrl/ullu/page/" to "Ullu",
+                    "$mainUrl/hotslive/page/" to "Hots Live",
             )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -57,7 +58,9 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
                         ?.attr("content")
         val embedUrl =
                 res.document
-                        .selectFirst("div.video-player > meta[itemprop=embedURL]")
+                        .selectFirst(
+                                "div.video-player > meta[itemprop=embedURL], meta[itemprop=contentURL]"
+                        )
                         ?.attr("content")
         val details = res.document.select("div#video-about")
         val name = details.select("div.more > h2").text()
@@ -71,7 +74,17 @@ class DesiXFlix(val plugin: DesiXFlixPlugin) :
             subtitleCallback: (SubtitleFile) -> Unit,
             callback: (ExtractorLink) -> Unit
     ): Boolean {
-        D0000dExtractor().getUrl(data, data)?.forEach { link -> callback.invoke(link) }
+        Log.d("Rushi", data)
+        when {
+            data.contains("d0000d") -> {
+                D0000dExtractor().getUrl(data, data)?.forEach { link -> callback.invoke(link) }
+            }
+            data.contains("hotxseries") -> {
+                var serverName = "HotxSeries"
+                callback.invoke(ExtractorLink(serverName, serverName, data, "", 0))
+            }
+            else -> loadExtractor(data, subtitleCallback, callback)
+        }
         return true
     }
 
