@@ -28,12 +28,12 @@ class AniwaveProviderPlugin : Plugin() {
             val manager = (context.getActivity() as? AppCompatActivity)?.supportFragmentManager
                 ?: return@openSettings
                
-            BottomFragment(this).show(manager, "Test")
+            BottomFragment(this).show(manager, "")
         }
     }
 
     fun reload(context: Context?) {
-        val pluginData = PluginManager.getPluginsOnline().find { it.internalName.contains("Aniwave/9Anime") }
+        val pluginData = PluginManager.getPluginsOnline().find { it.internalName.contains("Aniwave") }
         if(pluginData == null) {
             PluginManager.hotReloadAllLocalPlugins(context as AppCompatActivity)
         } else {
