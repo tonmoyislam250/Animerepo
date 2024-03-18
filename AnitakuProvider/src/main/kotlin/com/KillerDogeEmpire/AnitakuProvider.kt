@@ -214,7 +214,7 @@ class AnitakuProvider : MainAPI() {
 
         val home = parseRegex.findAll(html.text).map {
             val (link, epNum, title, poster) = it.destructured
-            newAnimeSearchResponse(title, link) {
+            newAnimeSearchResponse(title.replace(" (Dub)", ""), link) {
                 this.posterUrl = poster
                 addDubStatus(!isSub, epNum.toIntOrNull())
             }
@@ -261,11 +261,12 @@ class AnitakuProvider : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val link = getProperAnimeLink(url)
+        val isDub = url.contains("-dub")
         val episodeloadApi = "https://ajax.gogocdn.net/ajax/load-list-episode"
         val doc = app.get(link).document
 
         val animeBody = doc.selectFirst(".anime_info_body_bg")
-        val title = animeBody?.selectFirst("h1")!!.text()
+        val title = animeBody?.selectFirst("h1")!!.text().replace(" (Dub)","")
         val poster = animeBody.selectFirst("img")?.attr("src")
         var description: String? = null
         val genre = ArrayList<String>()
@@ -309,12 +310,34 @@ class AnitakuProvider : MainAPI() {
             )
         }.reversed()
 
+        var altEpisodes = emptyList<Episode>()
+        val altLink = if(isDub) link.removeSuffix("-dub") else link + "-dub"
+        val altDoc = app.get(altLink).document
+        if(altDoc.selectFirst("h1.entry-title") == null) {
+            val dubAnimeId = altDoc.selectFirst("#movie_id")!!.attr("value")
+            val dubParams = mapOf("ep_start" to "0", "ep_end" to "2000", "id" to dubAnimeId)
+            altEpisodes = app.get(episodeloadApi, params = dubParams)
+                .document
+                .select("a")
+                .map {
+                    Episode(
+                            fixUrl(it.attr("href").trim()),
+                            "Episode " + it.selectFirst(".name")?.text()?.replace("EP", "")?.trim()
+                    )
+                }
+                .reversed()
+        }
+
+        val mainDubStatus = if (isDub) DubStatus.Dubbed else DubStatus.Subbed
+        val altDubStatus = if (isDub) DubStatus.Subbed else DubStatus.Dubbed
+        
         return newAnimeLoadResponse(title, link, getType(type.toString())) {
             japName = nativeName
             engName = title
             posterUrl = poster
             this.year = year
-            addEpisodes(DubStatus.Subbed, episodes) // TODO CHECK
+            addEpisodes(mainDubStatus, episodes) // TODO CHECK
+            if(altEpisodes.isNotEmpty()) addEpisodes(altDubStatus, altEpisodes)
             plot = description
             tags = genre
 

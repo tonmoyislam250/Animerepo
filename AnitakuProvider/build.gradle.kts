@@ -1,5 +1,5 @@
 // use an integer for version numbers
-version = 3
+version = 4
 
 
 cloudstream {
@@ -7,7 +7,7 @@ cloudstream {
     // All of these properties are optional, you can safely remove them
 
     description = "Anime from Anitaku (formerly GoGo Anime)"
-    authors = listOf("Cloudburst, Aryan Invader, KillerDogeEmpire")
+    authors = listOf("Cloudburst, Aryan Invader, KillerDogeEmpire, RowdyRushya")
 
     /**
      * Status int as the following:
