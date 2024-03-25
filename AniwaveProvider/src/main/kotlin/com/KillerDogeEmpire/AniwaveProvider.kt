@@ -14,6 +14,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.net.URLEncoder
 import com.lagradost.cloudstream3.LoadResponse.Companion.addAniListId
+import com.lagradost.cloudstream3.utils.JsUnpacker
+import com.lagradost.cloudstream3.utils.Qualities
 //import android.util.Log (only required for debugging)
 
 class AniwaveProvider : MainAPI() {
@@ -415,6 +417,7 @@ class AniwaveProvider : MainAPI() {
                 "44" -> "filemoon"
                 "40" -> "streamtape"
                 "35" -> "mp4upload"
+                "28" -> "MyCloud"
                 else -> null
             }
         return sss
@@ -491,7 +494,17 @@ class AniwaveProvider : MainAPI() {
 //                    val asss = decUrlConsu(sId)
             val asss = AniwaveUtils.vrfDecrypt(encUrl)
 
-            loadExtractor(asss, subtitleCallback, callback)
+            if(sName.equals("filemoon")) {
+                val res = app.get(asss)
+                if(res.code == 200) {
+                    val packedJS = res.document.selectFirst("script:containsData(function(p,a,c,k,e,d))")?.data().toString()
+                    JsUnpacker(packedJS).unpack().let { unPacked ->
+                        Regex("sources:\\[\\{file:\"(.*?)\"").find(unPacked ?: "")?.groupValues?.get(1)?.let { link ->
+                            callback.invoke(ExtractorLink("Filemoon", "Filemoon", link, "", Qualities.Unknown.value, link.contains(".m3u8")))
+                        }
+                    }
+                }
+            } else loadExtractor(asss, subtitleCallback, callback)
 
 //                val regex = Regex("(.+?/)e(?:mbed)?/([a-zA-Z0-9]+)")
 //                val group = regex.find(asss)!!.groupValues
