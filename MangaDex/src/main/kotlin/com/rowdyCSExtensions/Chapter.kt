@@ -26,7 +26,7 @@ private const val ARG_PARAM2 = "param2"
 class MangaDexChapterFragment(
         val plugin: MangaDexPlugin,
         val chapterName: String,
-        val chapterPages: ChapterPagesResponse
+        val pages: List<String>
 ) : BottomSheetDialogFragment() {
 
     private var param1: String? = null
@@ -67,30 +67,12 @@ class MangaDexChapterFragment(
                 plugin.resources!!.getIdentifier("chapter", "layout", "com.RowdyAvocado")
         val chapterLayout = plugin.resources!!.getLayout(chapterLayoutId)
         val chapterView = inflater.inflate(chapterLayout, container, false)
-        val pageLayoutId = plugin.resources!!.getIdentifier("page", "layout", "com.RowdyAvocado")
-        // val loadingImg =
-        //         plugin.resources!!.getIdentifier("save_icon", "drawable",
-        // "com.RowdyAvocado")
 
         val chapterTitleTextView = chapterView.findView<TextView>("title")
         chapterTitleTextView.text = chapterName
-        // val pageListLayout = chapterView.findView<LinearLayout>("page_list")
-        val prefix = "${chapterPages.baseUrl}/#/${chapterPages.chapter.hash}/"
-        val images: Pair<String, List<String>> =
-                if (plugin.dataSaver)
-                        Pair(
-                                "data-saver",
-                                chapterPages.chapter.dataSaver,
-                        )
-                else
-                        Pair(
-                                "data",
-                                chapterPages.chapter.data,
-                        )
 
-        val imageUrls =
-                images.second.mapNotNull { image -> prefix.replace("#", images.first) + image }
-        val customAdapter = CustomAdapter(plugin, imageUrls)
+        // creating pages using recyclerView
+        val customAdapter = CustomAdapter(plugin, pages)
         val recyclerView: RecyclerView = chapterView.findView<RecyclerView>("page_list")
         recyclerView.setLayoutManager(LinearLayoutManager(context))
         recyclerView.adapter = customAdapter

@@ -61,8 +61,8 @@ class MangaDexPlugin : Plugin() {
         frag.show(activity!!.supportFragmentManager, "")
     }
 
-    suspend fun loadChapter(chapterName: String, chapterPages: ChapterPagesResponse) {
-        val frag = MangaDexChapterFragment(this, chapterName, chapterPages)
+    suspend fun loadChapter(chapterName: String, pages: List<String>) {
+        val frag = MangaDexChapterFragment(this, chapterName, pages)
         frag.show(activity!!.supportFragmentManager, "")
     }
 }

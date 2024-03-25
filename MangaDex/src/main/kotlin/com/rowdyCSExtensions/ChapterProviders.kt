@@ -10,12 +10,11 @@ import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.CommonActivity.showToast
 import com.lagradost.cloudstream3.utils.SubtitleHelper
 import kotlinx.coroutines.launch
 
@@ -103,15 +102,7 @@ class MangaDexChapterProvidersFragment(
             providerDetailsLayoutView.setOnClickListener(
                     object : OnClickListener {
                         override fun onClick(btn: View) {
-                            if (chapter.attrs.externalUrl.isNullOrBlank())
-                                    lifecycleScope.launch { fetchAndLoadChapter(chapter) }
-                            else
-                                    Toast.makeText(
-                                                    context,
-                                                    "External not supported",
-                                                    Toast.LENGTH_SHORT
-                                            )
-                                            .show()
+                            lifecycleScope.launch { fetchAndLoadChapter(chapter) }
                         }
                     }
             )
@@ -124,11 +115,9 @@ class MangaDexChapterProvidersFragment(
         val chapterName =
                 if (chapter.attrs.title.isNullOrBlank()) "Chapter " + chapter.attrs.chapter
                 else chapter.attrs.title!!
-
-        val chapterPages =
-                app.get("https://api.mangadex.org/at-home/server/${chapter.id}?forcePort443=false")
-                        .parsedSafe<ChapterPagesResponse>()!!
-        plugin.loadChapter(chapterName, chapterPages)
+        val pages = MangaDexExtractor(plugin).getPages(chapter)
+        if (pages.isNotEmpty()) plugin.loadChapter(chapterName, pages)
+        else showToast("Provider not yet supported")
     }
 
     @RequiresApi(Build.VERSION_CODES.M)

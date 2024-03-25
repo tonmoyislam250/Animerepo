@@ -107,7 +107,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                     }
                 }
 
-        return newAnimeLoadResponse(manga.attrs.title.name, url, TvType.Anime) {
+        return newAnimeLoadResponse(manga.attrs.title.name, url, TvType.CustomMedia) {
             addEpisodes(DubStatus.Dubbed, chapters)
             this.backgroundPosterUrl = posterUrl
             this.posterUrl = posterUrl
@@ -226,16 +226,4 @@ data class ChapterRelationships(
 
 data class ChapterScanlationGroupAttributes(
         @JsonProperty("name") var name: String? = null,
-)
-
-data class ChapterPagesResponse(
-        @JsonProperty("result") var result: String,
-        @JsonProperty("baseUrl") var baseUrl: String,
-        @JsonProperty("chapter") var chapter: ChapterImages,
-)
-
-data class ChapterImages(
-        @JsonProperty("hash") var hash: String,
-        @JsonProperty("data") var data: List<String>,
-        @JsonProperty("dataSaver") var dataSaver: List<String>,
 )
