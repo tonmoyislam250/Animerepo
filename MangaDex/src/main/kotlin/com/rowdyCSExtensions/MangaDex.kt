@@ -70,6 +70,7 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
         val posterUrl = "$mainUrl/covers/$mangaId/$poster"
         var chaptersResponse = emptyList<ChapterData?>()
         var chapterGroup = mutableMapOf<String, MutableList<ChapterData>>()
+        var volumeNames = emptySet<SeasonData>()
         var counter = 0
         val limit = 500
 
@@ -103,12 +104,17 @@ class MangaDex(val plugin: MangaDexPlugin) : MainAPI() {
                                         .ifEmpty { "Chapter " + chapter.key }
                         this.episode = chapter.key.toFloat().toInt()
                         this.season = chapter.value.first().attrs.volume?.toFloat()?.toInt()
+                        val volumeNum = this.season ?: 0
+                        volumeNames +=
+                                if (volumeNum == 0) SeasonData(0, "No Volume")
+                                else SeasonData(volumeNum, "Volume " + volumeNum)
                         this.data = mapper.writeValueAsString(chapter.value)
                     }
                 }
 
         return newAnimeLoadResponse(manga.attrs.title.name, url, TvType.CustomMedia) {
-            addEpisodes(DubStatus.Dubbed, chapters)
+            addEpisodes(DubStatus.Dubbed, chapters.sortedBy { it.episode })
+            this.seasonNames = volumeNames.toList()
             this.backgroundPosterUrl = posterUrl
             this.posterUrl = posterUrl
             this.plot = manga.attrs.desc.en
