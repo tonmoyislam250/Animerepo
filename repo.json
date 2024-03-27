@@ -1,0 +1,8 @@
+{
+  "name": "Tonmoy's Extensions",
+  "description": "This Repo Contains Aniwave",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/tonmoyislam250/Animerepo/builds/plugins.json"
+  ]
+}

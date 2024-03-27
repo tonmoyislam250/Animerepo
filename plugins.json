@@ -1,0 +1,43 @@
+[
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=anitaku.to&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/tonmoyislam250/Animerepo",
+        "fileSize": 27599,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "Cloudburst, Aryan Invader, KillerDogeEmpire, RowdyRushya"
+        ],
+        "tvTypes": [
+            "AnimeMovie",
+            "Anime",
+            "OVA"
+        ],
+        "version": 4,
+        "internalName": "AnitakuProvider",
+        "description": "Anime from Anitaku (formerly GoGo Anime)",
+        "url": "https://raw.githubusercontent.com/tonmoyislam250/Animerepo/builds/AnitakuProvider.cs3",
+        "name": "AnitakuProvider"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?domain=aniwave.to&sz=%size%",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/tonmoyislam250/Animerepo",
+        "fileSize": 52616,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "RowdyRushya, Horis, Stormunblessed, KillerDogeEmpire, Enimax, Chokerman"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 51,
+        "internalName": "AniwaveProvider",
+        "description": "Watch Aniwave/9anime, I have had reports saying homepage doesn't work the first time but retrying should fix it",
+        "url": "https://raw.githubusercontent.com/tonmoyislam250/Animerepo/builds/AniwaveProvider.cs3",
+        "name": "AniwaveProvider"
+    }
+]
