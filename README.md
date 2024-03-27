@@ -1,14 +1,6 @@
 ### The Only Repo That Contains Audio Books
 
-
-## Change The Food Emoji
-- [Sweet Potato](/README.yam.md)
-- [Bread](/README.bread.md)
-- [Cheese](/README.cheese.md)
-- [Cucumber](/README.cucumber.md)
-- [Corn](/README.corn.md)
-
-Listen to Audio Books. Add this repository using this shortcode: [Rowdycado](https://raw.githubusercontent.com/tonmoyislam250/Animerepo/builds/repo.json)
+Listen to Audio Books. Add this repository using this shortcode: [Tonmoy](https://raw.githubusercontent.com/tonmoyislam250/Animerepo/builds/repo.json)
 
 ~Click~ eat the avocado to install it on your phone:
 
