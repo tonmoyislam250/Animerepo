@@ -7,13 +7,6 @@ concurrency:
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      # choose your default branch
-      - master
-      - main
-    paths-ignore:
-      - '*.md'
 
 permissions: write-all
 
