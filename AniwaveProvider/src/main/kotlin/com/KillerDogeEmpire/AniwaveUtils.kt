@@ -9,7 +9,7 @@ import javax.crypto.spec.SecretKeySpec
 object AniwaveUtils {
 
     fun vrfEncrypt(input: String): String {
-        val rc4Key = SecretKeySpec("4VBTzFnH2rq3mB5y".toByteArray(), "RC4")
+        val rc4Key = SecretKeySpec("tGn6kIpVXBEUmqjD".toByteArray(), "RC4")
         val cipher = Cipher.getInstance("RC4")
         cipher.init(Cipher.DECRYPT_MODE, rc4Key, cipher.parameters)
 
@@ -28,7 +28,7 @@ object AniwaveUtils {
         var vrf = input.toByteArray()
         vrf = Base64.decode(vrf, Base64.URL_SAFE)
 
-        val rc4Key = SecretKeySpec("QVoJvQQIm8Znuvs8".toByteArray(), "RC4")
+        val rc4Key = SecretKeySpec("LUyDrL4qIxtIxOGs".toByteArray(), "RC4")
         val cipher = Cipher.getInstance("RC4")
         cipher.init(Cipher.DECRYPT_MODE, rc4Key, cipher.parameters)
         vrf = cipher.doFinal(vrf)
